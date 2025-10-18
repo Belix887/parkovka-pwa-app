@@ -1,11 +1,24 @@
 "use client";
 
 import { usePWA } from '@/lib/pwa';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function PWAInstallButton() {
   const { canInstall, isInstalled, installApp } = usePWA();
   const [isInstalling, setIsInstalling] = useState(false);
+  const [debugInfo, setDebugInfo] = useState('');
+
+  // Добавляем отладочную информацию
+  useEffect(() => {
+    const info = {
+      canInstall,
+      isInstalled,
+      userAgent: navigator.userAgent,
+      isHTTPS: location.protocol === 'https:',
+      hasServiceWorker: 'serviceWorker' in navigator
+    };
+    setDebugInfo(JSON.stringify(info, null, 2));
+  }, [canInstall, isInstalled]);
 
   if (isInstalled) {
     return (
@@ -18,39 +31,69 @@ export function PWAInstallButton() {
     );
   }
 
-  if (!canInstall) {
-    return null;
-  }
-
   const handleInstall = async () => {
+    console.log('Install button clicked');
     setIsInstalling(true);
     try {
       await installApp();
+      console.log('Install completed');
     } catch (error) {
       console.error('Installation failed:', error);
+      alert('Ошибка установки: ' + error);
     } finally {
       setIsInstalling(false);
     }
   };
 
   return (
-    <button
-      onClick={handleInstall}
-      disabled={isInstalling}
-      className="pwa-install-btn"
-    >
-      {isInstalling ? (
-        <>
-          <span className="loading-spinner"></span>
-          Установка...
-        </>
-      ) : (
-        <>
-          <span className="install-icon">📱</span>
-          Установить приложение
-        </>
-      )}
-    </button>
+    <div style={{ textAlign: 'center' }}>
+      <button
+        onClick={handleInstall}
+        disabled={isInstalling}
+        className="pwa-install-btn"
+        style={{
+          background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '12px',
+          padding: '12px 24px',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          margin: '0 auto'
+        }}
+      >
+        {isInstalling ? (
+          <>
+            <span className="loading-spinner">⏳</span>
+            Установка...
+          </>
+        ) : (
+          <>
+            <span className="install-icon">📱</span>
+            Установить приложение
+          </>
+        )}
+      </button>
+      
+      {/* Отладочная информация */}
+      <details style={{ marginTop: '16px', textAlign: 'left' }}>
+        <summary style={{ cursor: 'pointer', color: '#94a3b8' }}>Отладочная информация</summary>
+        <pre style={{ 
+          background: 'rgba(0,0,0,0.3)', 
+          padding: '12px', 
+          borderRadius: '8px', 
+          fontSize: '12px',
+          color: '#94a3b8',
+          marginTop: '8px'
+        }}>
+          {debugInfo}
+        </pre>
+      </details>
+    </div>
   );
 }
 
