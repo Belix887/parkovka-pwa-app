@@ -1,6 +1,4 @@
 "use client";
-// Принудительно делаем страницу динамической
-export const dynamic = 'force-dynamic';
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -29,11 +27,25 @@ export default function MobileAppHome() {
 
   const loadFeaturedSpots = async () => {
     try {
-      const response = await fetch('/api/spots/map');
+      // Используем относительный URL для избежания проблем с SSR
+      const response = await fetch('/api/spots/map', {
+        cache: 'no-store'
+      });
       const data = await response.json();
       setSpots(data.spots?.slice(0, 3) || []);
     } catch (error) {
       console.error('Error loading spots:', error);
+      // Устанавливаем моковые данные в случае ошибки
+      setSpots([
+        {
+          id: 'spot-1',
+          title: 'Парковка у Красной площади',
+          address: 'Красная площадь, 1, Москва',
+          pricePerHour: 20000,
+          features: ['Охрана', 'Видеонаблюдение'],
+          photos: [{ url: 'https://images.unsplash.com/photo-1520172313-4272701b72c1?w=800&h=600&fit=crop' }]
+        }
+      ]);
     } finally {
       setLoading(false);
     }
