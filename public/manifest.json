@@ -2,7 +2,7 @@
   "name": "Парковка - Умная парковка",
   "short_name": "Парковка",
   "description": "Найдите и забронируйте парковочное место в вашем городе",
-  "start_url": "/mobile-app",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0e1a",
   "theme_color": "#3b82f6",

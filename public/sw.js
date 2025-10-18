@@ -5,7 +5,6 @@ const DYNAMIC_CACHE_NAME = 'parkovka-dynamic-v1';
 // Файлы для кеширования при установке
 const STATIC_ASSETS = [
   '/',
-  '/mobile-app',
   '/mobile-app/catalog',
   '/mobile-app/map',
   '/mobile-app/profile',
@@ -103,7 +102,7 @@ self.addEventListener('fetch', (event) => {
               .catch(() => {
                 // Возвращаем офлайн страницу для навигации
                 if (request.destination === 'document') {
-                  return caches.match('/mobile-app');
+                  return caches.match('/');
                 }
               });
           })
@@ -171,7 +170,7 @@ self.addEventListener('fetch', (event) => {
                 
                 // Для навигационных запросов возвращаем главную страницу
                 if (request.destination === 'document') {
-                  return caches.match('/mobile-app');
+                  return caches.match('/');
                 }
               });
           })
@@ -220,7 +219,7 @@ self.addEventListener('notificationclick', (event) => {
 
   if (event.action === 'explore') {
     event.waitUntil(
-      clients.openWindow('/mobile-app')
+      clients.openWindow('/')
     );
   } else if (event.action === 'close') {
     // Просто закрываем уведомление
@@ -228,7 +227,7 @@ self.addEventListener('notificationclick', (event) => {
   } else {
     // Клик по телу уведомления
     event.waitUntil(
-      clients.openWindow('/mobile-app')
+      clients.openWindow('/')
     );
   }
 });
