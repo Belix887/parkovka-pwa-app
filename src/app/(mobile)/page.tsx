@@ -1,56 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { MobileSpotCard } from "@/components/mobile/MobileSpotCard";
-import { MobileMapPreview } from "@/components/mobile/MobileMapPreview";
-import { MobileQuickActions } from "@/components/mobile/MobileQuickActions";
 import { PWAInstallButton } from "@/components/pwa/PWAComponents";
 
-interface Spot {
-  id: string;
-  title: string;
-  address: string;
-  pricePerHour: number;
-  image?: string;
-  features: string[];
-  photos?: { url: string }[];
-}
-
 export default function MobileAppHome() {
-  const [spots, setSpots] = useState<Spot[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadFeaturedSpots();
-  }, []);
-
-  const loadFeaturedSpots = async () => {
-    try {
-      // Используем относительный URL для избежания проблем с SSR
-      const response = await fetch('/api/spots/map', {
-        cache: 'no-store'
-      });
-      const data = await response.json();
-      setSpots(data.spots?.slice(0, 3) || []);
-    } catch (error) {
-      console.error('Error loading spots:', error);
-      // Устанавливаем моковые данные в случае ошибки
-      setSpots([
-        {
-          id: 'spot-1',
-          title: 'Парковка у Красной площади',
-          address: 'Красная площадь, 1, Москва',
-          pricePerHour: 20000,
-          features: ['Охрана', 'Видеонаблюдение'],
-          photos: [{ url: 'https://images.unsplash.com/photo-1520172313-4272701b72c1?w=800&h=600&fit=crop' }]
-        }
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="mobile-home-app">
       {/* Приветственная секция */}
@@ -64,92 +17,6 @@ export default function MobileAppHome() {
             <p className="welcome-subtitle">
               Арендуйте частные парковочные места или сдавайте свои в аренду
             </p>
-          </div>
-          
-          <div className="welcome-stats">
-            <div className="stat-card">
-              <div className="stat-icon">🚗</div>
-              <div className="stat-info">
-                <div className="stat-number">6</div>
-                <div className="stat-label">Парковок</div>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">💰</div>
-              <div className="stat-info">
-                <div className="stat-number">70₽</div>
-                <div className="stat-label">от/час</div>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">🛡️</div>
-              <div className="stat-info">
-                <div className="stat-number">24/7</div>
-                <div className="stat-label">Охрана</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Быстрые действия */}
-      <section className="quick-actions-section">
-        <h2 className="section-title">Быстрые действия</h2>
-        <MobileQuickActions />
-      </section>
-
-      {/* Популярные парковки */}
-      <section className="featured-section">
-        <div className="section-header">
-          <h2 className="section-title">Популярные парковки</h2>
-          <Link href="/(mobile)/catalog" className="see-all-link">
-            Все парковки
-            <span className="arrow">→</span>
-          </Link>
-        </div>
-        
-        {loading ? (
-          <div className="loading-spots">
-            <div className="loading-card"></div>
-            <div className="loading-card"></div>
-            <div className="loading-card"></div>
-          </div>
-        ) : (
-          <div className="spots-grid">
-            {spots.map((spot) => (
-              <MobileSpotCard key={spot.id} spot={spot} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Карта */}
-      <section className="map-section">
-        <div className="section-header">
-          <h2 className="section-title">Карта парковок</h2>
-          <Link href="/(mobile)/map" className="see-all-link">
-            Открыть карту
-            <span className="arrow">→</span>
-          </Link>
-        </div>
-        <MobileMapPreview />
-      </section>
-
-      {/* CTA секция */}
-      <section className="cta-section-app">
-        <div className="cta-content">
-          <div className="cta-icon">🚀</div>
-          <h2 className="cta-title">Готовы начать?</h2>
-          <p className="cta-subtitle">
-            Присоединяйтесь к тысячам пользователей, которые уже экономят на парковке
-          </p>
-          <div className="cta-buttons">
-            <Link href="/(mobile)/register" className="cta-primary">
-              Зарегистрироваться
-            </Link>
-            <Link href="/(mobile)/login" className="cta-secondary">
-              Войти в аккаунт
-            </Link>
           </div>
         </div>
       </section>
@@ -165,6 +32,80 @@ export default function MobileAppHome() {
             </p>
           </div>
           <PWAInstallButton />
+        </div>
+      </section>
+
+      {/* Быстрые действия */}
+      <section className="quick-actions-section">
+        <h2 className="section-title">Быстрые действия</h2>
+        <div className="quick-actions-grid">
+          <Link href="/mobile-app/catalog" className="quick-action-card">
+            <div className="action-icon">🚗</div>
+            <div className="action-text">
+              <h3>Найти парковку</h3>
+              <p>Поиск по городу</p>
+            </div>
+          </Link>
+          
+          <Link href="/mobile-app/map" className="quick-action-card">
+            <div className="action-icon">🗺️</div>
+            <div className="action-text">
+              <h3>Карта</h3>
+              <p>Интерактивная карта</p>
+            </div>
+          </Link>
+          
+          <Link href="/mobile-app/spots/create" className="quick-action-card">
+            <div className="action-icon">➕</div>
+            <div className="action-text">
+              <h3>Сдать место</h3>
+              <p>Добавить парковку</p>
+            </div>
+          </Link>
+          
+          <Link href="/mobile-app/pwa-demo" className="quick-action-card">
+            <div className="action-icon">🚀</div>
+            <div className="action-text">
+              <h3>PWA Демо</h3>
+              <p>Тестирование функций</p>
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      {/* Популярные места */}
+      <section className="featured-spots-section">
+        <h2 className="section-title">Популярные места</h2>
+        <div className="spots-grid">
+          <div className="spot-card">
+            <div className="spot-image">
+              <img 
+                src="https://images.unsplash.com/photo-1520172313-4272701b72c1?w=800&h=600&fit=crop" 
+                alt="Парковка у Красной площади"
+                className="spot-photo"
+              />
+            </div>
+            <div className="spot-info">
+              <h3 className="spot-title">Парковка у Красной площади</h3>
+              <p className="spot-address">Красная площадь, 1, Москва</p>
+              <p className="spot-price">200 ₽/час</p>
+            </div>
+          </div>
+          
+          <div className="spot-card">
+            <div className="spot-image">
+              <img 
+                src="https://images.unsplash.com/photo-1520172313-4272701b72c1?w=800&h=600&fit=crop" 
+                alt="Парковка у ТЦ"
+                className="spot-photo"
+              />
+            </div>
+            <div className="spot-info">
+              <h3 className="spot-title">Парковка у ТЦ</h3>
+              <p className="spot-address">Тверская улица, 15, Москва</p>
+              <p className="spot-price">150 ₽/час</p>
+            </div>
+          </div>
         </div>
       </section>
     </div>
