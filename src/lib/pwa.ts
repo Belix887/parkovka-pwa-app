@@ -37,11 +37,19 @@ export function usePWA() {
         (window.navigator as any).standalone === true ||
         document.referrer.includes('android-app://');
       
+      console.log('🔍 Checking installation:', {
+        displayMode: window.matchMedia('(display-mode: standalone)').matches,
+        standalone: (window.navigator as any).standalone,
+        referrer: document.referrer,
+        isInstalled
+      });
+      
       setPwaState(prev => ({ ...prev, isInstalled }));
     };
 
     // Обработка события beforeinstallprompt
     const handleBeforeInstallPrompt = (e: Event) => {
+      console.log('🎉 beforeinstallprompt event fired!', e);
       e.preventDefault();
       const prompt = e as unknown as {
         prompt: () => Promise<void>;
@@ -52,6 +60,7 @@ export function usePWA() {
         userChoice: prompt.userChoice
       });
       setPwaState(prev => ({ ...prev, canInstall: true }));
+      console.log('✅ PWA can now be installed');
     };
 
     // Обработка установки приложения
