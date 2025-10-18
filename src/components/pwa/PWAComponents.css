@@ -1,0 +1,324 @@
+/* PWA Components Styles */
+
+/* Install Button */
+.pwa-install-btn {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.pwa-install-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.pwa-install-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.install-icon {
+  font-size: 16px;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Status Badge */
+.pwa-status {
+  margin: 8px 0;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.installed {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-icon {
+  font-size: 14px;
+}
+
+.status-text {
+  font-size: 12px;
+}
+
+/* Update Notification */
+.pwa-update-notification {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 16px;
+  padding: 16px;
+  z-index: 1000;
+  animation: slideInDown 0.3s ease-out;
+}
+
+.update-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.update-icon {
+  font-size: 24px;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.update-text {
+  flex: 1;
+}
+
+.update-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.update-subtitle {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.update-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.update-btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.update-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Offline Indicator */
+.pwa-offline-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(239, 68, 68, 0.9);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 8px 20px;
+  text-align: center;
+  z-index: 1000;
+  animation: slideInDown 0.3s ease-out;
+}
+
+.offline-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.offline-icon {
+  font-size: 16px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.offline-text {
+  font-size: 14px;
+}
+
+/* Notification Controls */
+.pwa-notification-controls {
+  margin: 8px 0;
+}
+
+.notification-permission-btn,
+.notification-test-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.notification-permission-btn:hover,
+.notification-test-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.notification-icon {
+  font-size: 16px;
+}
+
+/* PWA Features Panel */
+.pwa-features-panel {
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pwa-features-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pwa-features-title::before {
+  content: "📱";
+  font-size: 20px;
+}
+
+.pwa-features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.pwa-feature-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pwa-feature-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.pwa-feature-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.pwa-feature-description {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .pwa-update-notification {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+  }
+  
+  .pwa-features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pwa-features-panel {
+    margin: 10px 0;
+    padding: 16px;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .pwa-install-btn {
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+  }
+  
+  .pwa-install-btn:hover {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .pwa-install-btn,
+  .update-btn {
+    border: 2px solid white;
+  }
+  
+  .status-badge.installed {
+    border-width: 2px;
+  }
+}

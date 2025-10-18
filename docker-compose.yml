@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: parkovka-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: parkovka
+      POSTGRES_USER: parkovka
+      POSTGRES_PASSWORD: parkovka
+    ports:
+      - "5432:5432"
+    volumes:
+      - parkovka_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U parkovka -d parkovka"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  parkovka_db:

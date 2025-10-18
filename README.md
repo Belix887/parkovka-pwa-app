@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Parkovka — Local Quickstart (Windows)
 
-## Getting Started
+This guide lets you run the app locally tonight with Dockerized Postgres.
 
-First, run the development server:
+## Prerequisites
+- Docker Desktop (with WSL2 backend)
+- Node.js 20+
+- PowerShell
+
+## 1) Prepare environment
+Copy env template:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Copy-Item env.template .env.local -Force
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ensure in `.env.local`:
+- `DATABASE_URL=postgresql://parkovka:parkovka@localhost:5432/parkovka?schema=public`
+- Set `JWT_SECRET` to any strong random string for local use
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 2) One-command bootstrap
+From the `parkovka-app` folder:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+./start-local.ps1
+```
 
-## Learn More
+This will:
+- Start Postgres via Docker Compose
+- Install dependencies
+- Generate Prisma client
+- Apply migrations
+- Seed demo data (users and one parking spot)
+- Start Next.js dev server
 
-To learn more about Next.js, take a look at the following resources:
+Open `http://localhost:3000`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Demo accounts:
+- owner@example.com / owner123
+- renter@example.com / renter123
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Manual commands (optional)
+If you need to run pieces by hand:
 
-## Deploy on Vercel
+```bash
+# Start DB
+npm run db:up
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Generate prisma
+npm run prisma:generate
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Apply migrations
+npm run prisma:migrate
+
+# Seed
+npm run seed
+
+# Start dev
+npm run dev
+```
+
+## Production notes
+- Change `JWT_SECRET` and use a managed Postgres (update `DATABASE_URL`).
+- Use `npm run build && npm run start` in production.

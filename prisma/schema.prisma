@@ -1,0 +1,184 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  passwordHash  String
+  name          String?
+  phone         String?
+  role          UserRole      @default(RENTER)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  spots         ParkingSpot[] @relation("UserSpots")
+  bookings      Booking[]     @relation("UserBookings")
+  notifications Notification[]
+  pushTokens    PushToken[]
+}
+
+enum UserRole {
+  RENTER
+  OWNER
+  ADMIN
+}
+
+model ParkingSpot {
+  id                 String        @id @default(cuid())
+  ownerId            String
+  owner              User          @relation("UserSpots", fields: [ownerId], references: [id])
+
+  status             SpotStatus    @default(DRAFT)
+  title              String
+  description        String
+  pricePerHour       Int
+  currency           String        @default("RUB")
+
+  sizeL              Float
+  sizeW              Float
+  sizeH              Float
+  covered            Boolean       @default(false)
+  guarded            Boolean       @default(false)
+  camera             Boolean       @default(false)
+  evCharging         Boolean       @default(false)
+  disabledAccessible Boolean       @default(false)
+  wideEntrance       Boolean       @default(false)
+
+  accessType         AccessType
+  rules              String
+  address            String
+  geoLat             Float
+  geoLng             Float
+
+  instantApproval    Boolean       @default(false)
+
+  photos             SpotPhoto[]
+  availability       AvailabilityRule[]
+  blackouts          BookingBlock[]
+  bookings           Booking[]
+
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([ownerId])
+  @@index([geoLat, geoLng])
+  @@index([pricePerHour])
+  @@index([status])
+}
+
+enum SpotStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum AccessType {
+  PRIVATE_GATE
+  STREET
+  GARAGE
+  YARD
+  OTHER
+}
+
+model SpotPhoto {
+  id        String       @id @default(cuid())
+  spotId    String
+  spot      ParkingSpot  @relation(fields: [spotId], references: [id])
+  url       String
+  sortOrder Int          @default(0)
+}
+
+model AvailabilityRule {
+  id        String        @id @default(cuid())
+  spotId    String
+  spot      ParkingSpot   @relation(fields: [spotId], references: [id])
+  type      AvailabilityType
+  weekdays  Int[]?
+  fromTime  Int?
+  toTime    Int?
+  from      DateTime?
+  to        DateTime?
+}
+
+enum AvailabilityType {
+  RECURRING
+  SPECIFIC
+}
+
+model Booking {
+  id               String        @id @default(cuid())
+  spotId           String
+  spot             ParkingSpot   @relation(fields: [spotId], references: [id])
+  renterId         String
+  renter           User          @relation("UserBookings", fields: [renterId], references: [id])
+
+  startAt          DateTime
+  endAt            DateTime
+  status           BookingStatus @default(PENDING)
+
+  totalPrice       Int
+  commissionPct    Int           @default(10)
+  commissionAmount Int           @default(0)
+  ownerAmount      Int           @default(0)
+  paymentId        String?
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([spotId, startAt, endAt])
+  @@index([renterId])
+  @@index([status])
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  CANCELLED
+  PAID
+}
+
+model BookingBlock {
+  id      String       @id @default(cuid())
+  spotId  String
+  spot    ParkingSpot  @relation(fields: [spotId], references: [id])
+  from    DateTime
+  to      DateTime
+  reason  String?
+}
+
+model Notification {
+  id        String            @id @default(cuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id])
+  type      NotificationType
+  title     String
+  body      String
+  meta      Json?
+  readAt    DateTime?
+  createdAt DateTime          @default(now())
+}
+
+enum NotificationType {
+  EMAIL
+  PUSH
+  INAPP
+}
+
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  provider  String
+  token     String
+  createdAt DateTime @default(now())
+}
+
+
