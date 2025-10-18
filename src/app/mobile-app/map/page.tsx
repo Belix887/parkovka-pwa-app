@@ -1,146 +1,284 @@
 "use client";
-import dynamic from "next/dynamic";
-import { useState, useEffect } from "react";
+
 import Link from "next/link";
-import { MobileMapControls } from "@/components/mobile/MobileMapControls";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useState, useEffect } from "react";
 
-const LeafletMap = dynamic(() => import("@/components/map/LeafletMap"), { ssr: false });
-
-interface ParkingSpot {
-  id: string;
-  title: string;
-  address: string;
-  pricePerHour: number;
-  geoLat: number;
-  geoLng: number;
-  covered: boolean;
-  guarded: boolean;
-  camera: boolean;
-  evCharging: boolean;
-  disabledAccessible: boolean;
-  wideEntrance: boolean;
-  photos: { url: string }[];
-}
-
-export default function MobileAppMapPage() {
-  const [spots, setSpots] = useState<ParkingSpot[]>([]);
+export default function MobileMapPage() {
   const [loading, setLoading] = useState(true);
-  const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
 
   useEffect(() => {
-    loadSpots();
+    // Имитируем загрузку карты
+    setTimeout(() => {
+      setLoading(false);
+    }, 1500);
   }, []);
 
-  const loadSpots = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('/api/spots/map');
-      const data = await response.json();
-      setSpots(data.spots || []);
-    } catch (error) {
-      console.error('Error loading parking spots:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatPrice = (price: number) => {
-    return `${(price / 100).toLocaleString('ru-RU')} ₽/час`;
-  };
-
-  const getFeatures = (spot: ParkingSpot) => {
-    const features = [];
-    if (spot.covered) features.push('Крытая');
-    if (spot.guarded) features.push('Охраняемая');
-    if (spot.camera) features.push('Камеры');
-    if (spot.evCharging) features.push('Зарядка ЭВ');
-    if (spot.disabledAccessible) features.push('Для инвалидов');
-    if (spot.wideEntrance) features.push('Широкий въезд');
-    return features;
-  };
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #16213e 100%)',
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        padding: '20px'
+      }}>
+        <div style={{ fontSize: '48px', marginBottom: '20px' }}>🗺️</div>
+        <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>Загрузка карты...</h2>
+        <p style={{ color: '#94a3b8', textAlign: 'center' }}>Подготавливаем интерактивную карту</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="mobile-map-app">
-      {/* Заголовок карты */}
-      <div className="map-header-app">
-        <div className="header-content">
-          <h1 className="page-title">Карта парковок</h1>
-          <p className="page-subtitle">Доступно: {spots.length} мест</p>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #16213e 100%)',
+      color: 'white',
+      padding: '20px'
+    }}>
+      {/* Заголовок */}
+      <div style={{
+        textAlign: 'center',
+        marginBottom: '30px',
+        padding: '20px 0'
+      }}>
+        <h1 style={{
+          fontSize: '28px',
+          fontWeight: 'bold',
+          marginBottom: '10px',
+          background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
+        }}>
+          Интерактивная карта
+        </h1>
+        <p style={{
+          color: '#94a3b8',
+          fontSize: '16px'
+        }}>
+          Найдите парковку рядом с вами
+        </p>
+      </div>
+
+      {/* Заглушка карты */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.05)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '16px',
+        height: '400px',
+        marginBottom: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Имитация карты */}
+        <div style={{
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          background: 'linear-gradient(45deg, #1a1a2e 25%, #16213e 25%, #16213e 50%, #1a1a2e 50%, #1a1a2e 75%, #16213e 75%)',
+          backgroundSize: '20px 20px',
+          opacity: '0.3'
+        }} />
+        
+        {/* Маркеры парковок */}
+        <div style={{
+          position: 'absolute',
+          top: '20%',
+          left: '30%',
+          width: '12px',
+          height: '12px',
+          background: '#3b82f6',
+          borderRadius: '50%',
+          border: '2px solid white',
+          boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)'
+        }} />
+        
+        <div style={{
+          position: 'absolute',
+          top: '40%',
+          right: '25%',
+          width: '12px',
+          height: '12px',
+          background: '#8b5cf6',
+          borderRadius: '50%',
+          border: '2px solid white',
+          boxShadow: '0 0 10px rgba(139, 92, 246, 0.5)'
+        }} />
+        
+        <div style={{
+          position: 'absolute',
+          bottom: '30%',
+          left: '20%',
+          width: '12px',
+          height: '12px',
+          background: '#10b981',
+          borderRadius: '50%',
+          border: '2px solid white',
+          boxShadow: '0 0 10px rgba(16, 185, 129, 0.5)'
+        }} />
+
+        {/* Центральный контент */}
+        <div style={{
+          position: 'relative',
+          zIndex: '1',
+          textAlign: 'center',
+          background: 'rgba(0, 0, 0, 0.7)',
+          borderRadius: '12px',
+          padding: '20px'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗺️</div>
+          <h3 style={{ fontSize: '20px', marginBottom: '8px' }}>Карта загружена</h3>
+          <p style={{ color: '#94a3b8', fontSize: '14px' }}>
+            Интерактивная карта с парковочными местами
+          </p>
         </div>
-        <Link href="/mobile-app/catalog" className="catalog-link">
-          <span className="link-icon">🚗</span>
-          Каталог
+      </div>
+
+      {/* Контролы карты */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.05)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '16px',
+        padding: '16px',
+        marginBottom: '20px'
+      }}>
+        <h3 style={{ fontSize: '18px', marginBottom: '12px' }}>Управление картой</h3>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '12px'
+        }}>
+          <button style={{
+            background: 'rgba(59, 130, 246, 0.2)',
+            border: '1px solid #3b82f6',
+            borderRadius: '8px',
+            padding: '12px',
+            color: 'white',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            📍 Моё местоположение
+          </button>
+          <button style={{
+            background: 'rgba(59, 130, 246, 0.2)',
+            border: '1px solid #3b82f6',
+            borderRadius: '8px',
+            padding: '12px',
+            color: 'white',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            🔍 Поиск рядом
+          </button>
+          <button style={{
+            background: 'rgba(59, 130, 246, 0.2)',
+            border: '1px solid #3b82f6',
+            borderRadius: '8px',
+            padding: '12px',
+            color: 'white',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            🚗 Доступные места
+          </button>
+          <button style={{
+            background: 'rgba(59, 130, 246, 0.2)',
+            border: '1px solid #3b82f6',
+            borderRadius: '8px',
+            padding: '12px',
+            color: 'white',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            ⏰ Ближайшие
+          </button>
+        </div>
+      </div>
+
+      {/* Легенда */}
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.05)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '16px',
+        padding: '16px',
+        marginBottom: '20px'
+      }}>
+        <h3 style={{ fontSize: '18px', marginBottom: '12px' }}>Легенда</h3>
+        <div style={{ display: 'grid', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '12px',
+              height: '12px',
+              background: '#3b82f6',
+              borderRadius: '50%',
+              border: '2px solid white'
+            }} />
+            <span style={{ fontSize: '14px' }}>Доступные места</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '12px',
+              height: '12px',
+              background: '#8b5cf6',
+              borderRadius: '50%',
+              border: '2px solid white'
+            }} />
+            <span style={{ fontSize: '14px' }}>Занятые места</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '12px',
+              height: '12px',
+              background: '#10b981',
+              borderRadius: '50%',
+              border: '2px solid white'
+            }} />
+            <span style={{ fontSize: '14px' }}>Премиум места</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Кнопка "Назад" */}
+      <div style={{
+        textAlign: 'center',
+        marginTop: '30px',
+        paddingBottom: '20px'
+      }}>
+        <Link 
+          href="/"
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '12px',
+            padding: '12px 24px',
+            textDecoration: 'none',
+            color: 'white',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            display: 'inline-block'
+          }}
+        >
+          ← Назад на главную
         </Link>
       </div>
-
-      {/* Контейнер карты */}
-      <div className="map-container-app">
-        {loading && (
-          <div className="map-loading">
-            <div className="loading-spinner"></div>
-            <p>Загрузка парковок...</p>
-          </div>
-        )}
-        <LeafletMap spots={spots} center={[55.751244, 37.618423]} />
-      </div>
-
-      {/* Элементы управления картой */}
-      <MobileMapControls
-        spots={spots}
-        selectedSpot={selectedSpot}
-        onSpotSelect={setSelectedSpot}
-        setSelectedSpot={setSelectedSpot}
-        formatPrice={formatPrice}
-        getFeatures={getFeatures}
-      />
-
-      {/* Информационная панель */}
-      {selectedSpot && (
-        <div className="spot-info-panel-app">
-          <div className="panel-header">
-            <h3 className="spot-title">{selectedSpot.title}</h3>
-            <button className="close-panel" onClick={() => setSelectedSpot(null)}>
-              ✕
-            </button>
-          </div>
-          <div className="panel-content">
-            <div className="spot-details">
-              <div className="detail-item">
-                <span className="detail-icon">📍</span>
-                <span className="detail-text">{selectedSpot.address}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-icon">💰</span>
-                <span className="detail-text">{formatPrice(selectedSpot.pricePerHour)}</span>
-              </div>
-              {selectedSpot.photos.length > 0 && (
-                <div className="spot-photo">
-                  <img src={selectedSpot.photos[0].url} alt={selectedSpot.title} className="photo-image" />
-                </div>
-              )}
-              <div className="detail-item">
-                <span className="detail-icon">✨</span>
-                <div className="features-list">
-                  {getFeatures(selectedSpot).map((feature, index) => (
-                    <span key={index} className="feature-tag">{feature}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="panel-actions">
-              <Link href={`/spots/${selectedSpot.id}`} className="action-button primary">
-                <span className="button-icon">👁️</span>
-                Подробнее
-              </Link>
-              <button className="action-button secondary">
-                <span className="button-icon">❤️</span>
-                В избранное
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
