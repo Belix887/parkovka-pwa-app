@@ -1,6 +1,7 @@
 async function getRequests() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+      (process.env.NODE_ENV === 'production' ? 'https://parkovka-pwa-app.vercel.app' : 'http://localhost:3000');
     const res = await fetch(`${baseUrl}/api/owner/requests`, { cache: "no-store" });
     
     if (!res.ok) {
@@ -19,6 +20,9 @@ async function getRequests() {
 import { MotionCard, CardHeader, CardContent } from "@/components/ui/MotionCard";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+
+// Принудительно делаем страницу динамической
+export const dynamic = 'force-dynamic';
 
 export default async function OwnerRequestsPage() {
   const requests = await getRequests();

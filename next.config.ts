@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['@/components', '@/lib']
   },
+  // Для продакшена
+  output: 'standalone',
   // PWA configuration
   async headers() {
     return [

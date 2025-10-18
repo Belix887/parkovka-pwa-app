@@ -1,4 +1,7 @@
 "use client";
+// Принудительно делаем страницу динамической
+export const dynamic = 'force-dynamic';
+
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { MobileSpotCard } from "@/components/mobile/MobileSpotCard";
