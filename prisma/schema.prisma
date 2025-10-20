@@ -100,7 +100,7 @@ model AvailabilityRule {
   spotId    String
   spot      ParkingSpot   @relation(fields: [spotId], references: [id])
   type      AvailabilityType
-  weekdays  Int[]?
+  weekdays  Int[]         @default([])
   fromTime  Int?
   toTime    Int?
   from      DateTime?
