@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { spotCreateSchema } from "@/lib/validation";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function GET(req: Request) {
 	const url = new URL(req.url);
@@ -32,6 +33,19 @@ export async function GET(req: Request) {
 	const accessType = url.searchParams.get("accessType");
 	if (accessType) filters.accessType = accessType;
 
+	// Список моих мест (владелец): /api/spots?mine=true
+	const mine = url.searchParams.get("mine") === "true";
+	if (mine) {
+		const user = await getCurrentUser();
+		if (!user) return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
+		const mySpots = await prisma.parkingSpot.findMany({
+			where: { ownerId: user.id },
+			orderBy: { createdAt: "desc" },
+			include: { photos: { orderBy: { sortOrder: "asc" }, take: 1 } },
+		} as any);
+		return NextResponse.json(mySpots);
+	}
+
 	const spots = await prisma.parkingSpot.findMany({
 		where: filters,
 		skip,
@@ -47,6 +61,8 @@ export async function POST(req: Request) {
 	const body = await req.json();
 	const parsed = spotCreateSchema.safeParse(body);
 	if (!parsed.success) return NextResponse.json({ error: "Некорректные данные" }, { status: 400 });
+	const user = await getCurrentUser();
+	if (!user) return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
 
 	const {
 		title, description, pricePerHour, sizeL, sizeW, sizeH,
@@ -56,7 +72,7 @@ export async function POST(req: Request) {
 
 	const spot = await prisma.parkingSpot.create({
 		data: {
-			ownerId: "REPLACE_WITH_AUTH_USER_ID",
+			ownerId: user.id,
 			status: "PENDING_REVIEW",
 			title, description, pricePerHour, sizeL, sizeW, sizeH,
 			covered, guarded, camera, evCharging, disabledAccessible, wideEntrance,

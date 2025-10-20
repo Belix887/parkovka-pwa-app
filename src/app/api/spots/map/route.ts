@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 // Тестовые парковочные места в Москве
 const mockSpots = [
@@ -96,7 +97,16 @@ const mockSpots = [
 
 export async function GET() {
   try {
-    // Возвращаем тестовые данные
+    try {
+      const spots = await prisma.parkingSpot.findMany({
+        where: { status: "APPROVED" },
+        orderBy: { createdAt: "desc" },
+        include: { photos: { orderBy: { sortOrder: "asc" }, take: 1 } },
+      } as any);
+      if (spots && spots.length) return NextResponse.json({ spots });
+    } catch (_e) {
+      // ignore and fall back
+    }
     return NextResponse.json({ spots: mockSpots });
   } catch (error) {
     console.error("Error fetching spots for map:", error);

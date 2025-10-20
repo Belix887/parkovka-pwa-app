@@ -108,9 +108,11 @@ export default async function ProfilePage() {
               </div>
             </CardContent>
             <div className="mt-6 pt-6 border-t border-[var(--border-primary)]">
-              <Button variant="outline" size="sm" className="w-full" icon="✏️">
-                Редактировать профиль
-              </Button>
+              <Link href="/profile/edit" className="block">
+                <Button variant="outline" size="sm" className="w-full" icon="✏️">
+                  Редактировать профиль
+                </Button>
+              </Link>
             </div>
           </MotionCard>
 

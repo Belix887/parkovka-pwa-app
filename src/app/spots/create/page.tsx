@@ -11,19 +11,30 @@ export default function CreateSpotPage() {
   const [loading, setLoading] = useState(false);
   const { showSuccess, showError, showInfo } = useToast();
 
-  async function handleUpload() {
+  async function handleFilePick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
     if (photos.length >= 10) {
       showError("Превышен лимит", "Максимум 10 фотографий");
       return;
     }
-    
     try {
       const res = await fetch("/api/uploads/sign", { method: "POST" });
-      const { url } = await res.json();
-      setPhotos((p) => [...p, url]);
-      showInfo("Фото добавлено", "Фотография успешно загружена");
+      const data = await res.json();
+      if (data.signedUrl) {
+        await fetch(data.signedUrl, { method: data.method || 'PUT', headers: data.headers || {}, body: file });
+        setPhotos((p) => [...p, data.publicUrl]);
+        showInfo("Фото добавлено", "Фотография успешно загружена");
+      } else if (data.publicUrl) {
+        setPhotos((p) => [...p, data.publicUrl]);
+        showInfo("Фото добавлено", "Использован плейсхолдер");
+      } else {
+        throw new Error("no url");
+      }
     } catch (err) {
       showError("Ошибка загрузки", "Не удалось загрузить фото");
+    } finally {
+      e.currentTarget.value = "";
     }
   }
 
@@ -256,15 +267,10 @@ export default function CreateSpotPage() {
                     ))}
                   </div>
                   
-                  <Button
-                    type="button"
-                    onClick={handleUpload}
-                    variant="outline"
-                    icon="📷"
-                    className="w-full"
-                  >
-                    Добавить фото ({photos.length}/10)
-                  </Button>
+                  <label className="block w-full">
+                    <input type="file" accept="image/*" className="hidden" onChange={handleFilePick} />
+                    <Button type="button" variant="outline" icon="📷" className="w-full">Добавить фото ({photos.length}/10)</Button>
+                  </label>
                 </div>
               </CardContent>
             </MotionCard>

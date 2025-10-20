@@ -57,6 +57,12 @@ export const prisma = {
       const u: User = { id: cuid(), role: "RENTER", passwordHash: "", ...create };
       users.push(u); return u;
     },
+    update: async ({ where: { id }, data }: any) => {
+      const u = users.find(u => u.id === id);
+      if (!u) throw new Error('not found');
+      Object.assign(u, data);
+      return u;
+    },
   },
   parkingSpot: {
     findMany: async ({ where, skip = 0, take = 20, orderBy, include }: any) => {

@@ -1,3 +1,37 @@
+# Node/Next.js
+node_modules/
+.next/
+.turbo/
+dist/
+build/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# OS/Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Prisma
+prisma/*.db
+prisma/*.sqlite
+prisma/migrations/*/shadow.db
+
+# Logs
+logs
+*.log
+*.log.*
+
+# Docker
+docker-data/
+
 # Node
 node_modules/
 npm-debug.log*

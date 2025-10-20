@@ -1,22 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function GET() {
   try {
-    // Получаем все бронирования со статусом PENDING
-    const requests = await prisma.booking.findMany({
-      where: { status: "PENDING" },
-      include: {
-        spot: {
-          select: {
-            id: true,
-            title: true,
-            address: true,
-            pricePerHour: true
-          }
-        }
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
+
+    // Заявки только для мест текущего владельца со статусом PENDING
+    const requests = await (prisma as any).booking.findMany({
+      where: {
+        status: "PENDING",
+        spot: { ownerId: user.id },
       },
-      orderBy: { createdAt: "desc" }
+      include: { spot: { select: { id: true, title: true, address: true, pricePerHour: true } } },
+      orderBy: { createdAt: "desc" },
     });
 
     // Форматируем данные для отображения

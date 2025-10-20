@@ -1,15 +1,24 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RangeSlider } from "./RangeSlider";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function InteractiveFilters() {
-  const [priceRange, setPriceRange] = useState(150);
-  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const router = useRouter();
+  const search = useSearchParams();
+  const [priceRange, setPriceRange] = useState<number>(Number(search.get("priceMax")) || 150);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>(() => {
+    const raw = search.get("features");
+    return raw ? raw.split(",") : [];
+  });
 
   const features = [
     { id: 'covered', label: 'Крытая', icon: '🏠', color: 'bg-[var(--accent-primary)]' },
     { id: 'guarded', label: 'Охраняемая', icon: '🛡️', color: 'bg-[var(--accent-success)]' },
-    { id: 'charging', label: 'Электрозарядка', icon: '🔌', color: 'bg-[var(--accent-warning)]' }
+    { id: 'camera', label: 'Камера', icon: '📹', color: 'bg-[var(--accent-warning)]' },
+    { id: 'evCharging', label: 'Зарядка ЭВ', icon: '⚡', color: 'bg-[var(--accent-warning)]' },
+    { id: 'disabledAccessible', label: 'Для инвалидов', icon: '♿', color: 'bg-[var(--accent-success)]' },
+    { id: 'wideEntrance', label: 'Широкий въезд', icon: '🚗', color: 'bg-[var(--accent-primary)]' },
   ];
 
   const toggleFeature = (featureId: string) => {
@@ -19,6 +28,14 @@ export function InteractiveFilters() {
         : [...prev, featureId]
     );
   };
+
+  useEffect(() => {
+    const params = new URLSearchParams(search.toString());
+    params.set("priceMax", String(priceRange * 100)); // копейки
+    if (selectedFeatures.length) params.set("features", selectedFeatures.join(","));
+    else params.delete("features");
+    router.push(`?${params.toString()}`);
+  }, [priceRange, selectedFeatures]);
 
   const getPriceCategory = (price: number) => {
     if (price < 100) return 'Бюджетные';
@@ -33,7 +50,6 @@ export function InteractiveFilters() {
     if (price < 350) return 'bg-purple-500';
     return 'bg-red-500';
   };
-
 
   return (
     <div className="space-y-6">
@@ -61,20 +77,7 @@ export function InteractiveFilters() {
         </div>
       </div>
 
-      {/* Размер места */}
-      <div>
-        <label className="block text-sm font-bold text-[var(--text-primary)] mb-3 drop-shadow-sm">
-          Размер места
-        </label>
-        <select className="w-full p-3 bg-[var(--bg-tertiary)] border-2 border-[var(--accent-primary)] rounded-xl text-[var(--text-primary)] font-medium focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]">
-          <option>Любой</option>
-          <option>Компактный</option>
-          <option>Стандартный</option>
-          <option>Большой</option>
-        </select>
-      </div>
-
-      {/* Интерактивные кнопки особенностей */}
+      {/* Особенности */}
       <div>
         <label className="block text-sm font-bold text-[var(--text-primary)] mb-3 drop-shadow-sm">
           Особенности места
@@ -97,38 +100,6 @@ export function InteractiveFilters() {
             </button>
           ))}
         </div>
-        
-        {/* Показываем выбранные особенности */}
-        {selectedFeatures.length > 0 && (
-          <div className="mt-4 p-3 bg-[var(--bg-surface)] rounded-xl border border-[var(--accent-primary)]">
-            <p className="text-sm text-[var(--text-primary)] font-medium mb-2">
-              Выбрано особенностей: {selectedFeatures.length}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {selectedFeatures.map(featureId => {
-                const feature = features.find(f => f.id === featureId);
-                return (
-                  <span key={featureId} className="px-2 py-1 bg-[var(--accent-primary)] text-white rounded-full text-xs">
-                    {feature?.icon} {feature?.label}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Результаты фильтрации */}
-      <div className="p-4 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] rounded-xl">
-        <h4 className="text-white font-bold mb-2">Результаты поиска</h4>
-        <p className="text-white text-sm opacity-90">
-          Найдено мест: {Math.floor(Math.random() * 50) + 10} в диапазоне {priceRange}₽/час
-        </p>
-        {selectedFeatures.length > 0 && (
-          <p className="text-white text-sm opacity-90 mt-1">
-            С особенностями: {selectedFeatures.join(', ')}
-          </p>
-        )}
       </div>
     </div>
   );

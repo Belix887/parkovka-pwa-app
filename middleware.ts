@@ -16,6 +16,18 @@ export function middleware(req: NextRequest) {
     cur.count += 1;
     if (cur.count > RATE_LIMIT) return NextResponse.json({ error: "Too Many Requests" }, { status: 429 });
   }
+  const url = new URL(req.url);
+  const protectedPaths = ["/profile", "/spots/create", "/api/bookings", "/api/owner", "/api/me"];
+  const isProtected = protectedPaths.some((p) => url.pathname === p || url.pathname.startsWith(p + "/"));
+
+  // Простая проверка наличия cookie сессии
+  if (isProtected && !req.cookies.get("session")?.value) {
+    if (url.pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
+    }
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+
   const res = NextResponse.next();
   res.headers.set("X-Frame-Options", "DENY");
   res.headers.set("X-Content-Type-Options", "nosniff");
@@ -25,7 +37,7 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*"],
+  matcher: ["/api/:path*", "/profile/:path*", "/spots/create"],
 };
 
 
