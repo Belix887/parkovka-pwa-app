@@ -16,8 +16,8 @@
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:deploy": "prisma migrate deploy",
     "setup": "npm run db:up && npm run prisma:generate && npm run prisma:migrate && npm run seed",
-    "vercel-build": "prisma generate && (prisma migrate deploy || echo 'skip migrate') && next build",
-    "postinstall": "prisma generate"
+    "vercel-build": "set PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 && prisma generate && (prisma migrate deploy || echo 'skip migrate') && next build",
+    "postinstall": "set PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 && prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.17.1",
