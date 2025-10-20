@@ -15,7 +15,9 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:deploy": "prisma migrate deploy",
-    "setup": "npm run db:up && npm run prisma:generate && npm run prisma:migrate && npm run seed"
+    "setup": "npm run db:up && npm run prisma:generate && npm run prisma:migrate && npm run seed",
+    "vercel-build": "prisma generate && (prisma migrate deploy || echo 'skip migrate') && next build",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.17.1",
@@ -43,6 +45,9 @@
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "prettier": {
     "printWidth": "100",
