@@ -5,10 +5,8 @@ const DYNAMIC_CACHE_NAME = 'parkovka-dynamic-v1';
 // Файлы для кеширования при установке
 const STATIC_ASSETS = [
   '/',
-  '/mobile-app/catalog',
-  '/mobile-app/map',
-  '/mobile-app/profile',
-  '/mobile-app/bookings',
+  '/map',
+  '/catalog',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',

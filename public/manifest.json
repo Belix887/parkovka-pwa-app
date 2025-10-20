@@ -79,7 +79,7 @@
       "name": "Найти парковку",
       "short_name": "Поиск",
       "description": "Быстро найти ближайшую парковку",
-      "url": "/mobile-app/map",
+      "url": "/map",
       "icons": [
         {
           "src": "/icons/shortcut-search.png",
@@ -87,18 +87,7 @@
         }
       ]
     },
-    {
-      "name": "Мои бронирования",
-      "short_name": "Бронирования",
-      "description": "Просмотр активных бронирований",
-      "url": "/mobile-app/bookings",
-      "icons": [
-        {
-          "src": "/icons/shortcut-bookings.png",
-          "sizes": "96x96"
-        }
-      ]
-    }
+    
   ],
   "related_applications": [],
   "prefer_related_applications": false

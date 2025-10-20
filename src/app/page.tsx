@@ -94,7 +94,7 @@ export default function HomePage() {
           gridTemplateColumns: 'repeat(2, 1fr)',
           gap: '16px'
         }}>
-          <Link href="/mobile-app/catalog" style={{
+          <Link href="/catalog" style={{
             background: 'rgba(255, 255, 255, 0.05)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '16px',
@@ -116,7 +116,7 @@ export default function HomePage() {
             </div>
           </Link>
           
-          <Link href="/mobile-app/map" style={{
+          <Link href="/map" style={{
             background: 'rgba(255, 255, 255, 0.05)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '16px',
@@ -138,7 +138,7 @@ export default function HomePage() {
             </div>
           </Link>
           
-          <Link href="/mobile-app/spots/create" style={{
+          <Link href="/spots/create" style={{
             background: 'rgba(255, 255, 255, 0.05)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '16px',
@@ -160,7 +160,7 @@ export default function HomePage() {
             </div>
           </Link>
           
-          <Link href="/mobile-app/pwa-demo" style={{
+          <Link href="/pwa-demo" style={{
             background: 'rgba(255, 255, 255, 0.05)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '16px',
