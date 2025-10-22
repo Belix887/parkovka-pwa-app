@@ -37,8 +37,8 @@ export default async function ProfilePage() {
       {/* Мобильная навигация */}
       <MobileNavigation user={user} />
       
-             {/* Основной контент */}
-             <div>
+             {/* Основной контент с отступом для мобильной шапки */}
+             <div className="pt-14 md:pt-0">
         <div className="container py-6 md:py-12">
           <div className="text-center mb-8 md:mb-12">
             <h1 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
