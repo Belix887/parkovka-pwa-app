@@ -12,31 +12,31 @@ export default function HomePage() {
       <MobileNavigation />
       
       {/* Основной контент с отступом для мобильной шапки */}
-      <div className="pt-16 md:pt-0">
+      <div className="pt-14 md:pt-0">
         <div className="container">
           {/* Приветственная секция */}
-          <section className="text-center py-8 md:py-12 mb-6 md:mb-8">
-            <div className="bg-gradient-to-r from-[var(--accent-primary)]/10 to-[var(--accent-secondary)]/10 rounded-2xl md:rounded-3xl p-6 md:p-12">
-              <h1 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6 leading-tight">
+          <section className="text-center py-6 md:py-12 mb-4 md:mb-8">
+            <div className="bg-gradient-to-r from-[var(--accent-primary)]/10 to-[var(--accent-secondary)]/10 rounded-xl md:rounded-3xl p-4 md:p-12">
+              <h1 className="text-xl md:text-4xl font-bold mb-3 md:mb-6 leading-tight">
                 Найдите идеальное
                 <span className="bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent">
                   {" "}парковочное место
                 </span>
               </h1>
-              <p className="text-[var(--text-secondary)] text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
+              <p className="text-[var(--text-secondary)] text-sm md:text-lg leading-relaxed max-w-2xl mx-auto">
                 Арендуйте частные парковочные места или сдавайте свои в аренду
               </p>
             </div>
           </section>
 
           {/* PWA Install Section */}
-          <section className="bg-[var(--bg-surface)] backdrop-blur-xl rounded-2xl p-6 md:p-8 mb-6 md:mb-8 border border-[var(--border-primary)]">
+          <section className="bg-[var(--bg-surface)] backdrop-blur-xl rounded-xl md:rounded-2xl p-4 md:p-8 mb-4 md:mb-8 border border-[var(--border-primary)]">
             <div className="text-center">
-              <div className="text-4xl md:text-6xl mb-4">📱</div>
-              <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] mb-3">
+              <div className="text-3xl md:text-6xl mb-3 md:mb-4">📱</div>
+              <h2 className="text-lg md:text-2xl font-bold text-[var(--text-primary)] mb-2 md:mb-3">
                 Установите приложение
               </h2>
-              <p className="text-[var(--text-secondary)] text-sm md:text-base mb-6 max-w-md mx-auto">
+              <p className="text-[var(--text-secondary)] text-xs md:text-base mb-4 md:mb-6 max-w-md mx-auto">
                 Добавьте приложение на главный экран для быстрого доступа
               </p>
               <PWAInstallButton />
@@ -44,17 +44,17 @@ export default function HomePage() {
           </section>
 
           {/* Быстрые действия */}
-          <section className="mb-6 md:mb-8">
-            <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] mb-6 text-center">
+          <section className="mb-4 md:mb-8">
+            <h2 className="text-lg md:text-2xl font-bold text-[var(--text-primary)] mb-4 md:mb-6 text-center">
               Быстрые действия
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
               <Link 
                 href="/catalog" 
-                className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-2xl p-4 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[120px] md:min-h-[140px] flex flex-col items-center justify-center"
+                className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl md:rounded-2xl p-3 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[100px] md:min-h-[140px] flex flex-col items-center justify-center"
               >
-                <div className="text-3xl md:text-4xl mb-3">🚗</div>
-                <h3 className="text-sm md:text-base font-bold text-[var(--text-primary)] mb-1">
+                <div className="text-2xl md:text-4xl mb-2 md:mb-3">🚗</div>
+                <h3 className="text-xs md:text-base font-bold text-[var(--text-primary)] mb-1">
                   Найти парковку
                 </h3>
                 <p className="text-xs md:text-sm text-[var(--text-secondary)]">
@@ -64,10 +64,10 @@ export default function HomePage() {
               
               <Link 
                 href="/map" 
-                className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-2xl p-4 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[120px] md:min-h-[140px] flex flex-col items-center justify-center"
+                className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl md:rounded-2xl p-3 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[100px] md:min-h-[140px] flex flex-col items-center justify-center"
               >
-                <div className="text-3xl md:text-4xl mb-3">🗺️</div>
-                <h3 className="text-sm md:text-base font-bold text-[var(--text-primary)] mb-1">
+                <div className="text-2xl md:text-4xl mb-2 md:mb-3">🗺️</div>
+                <h3 className="text-xs md:text-base font-bold text-[var(--text-primary)] mb-1">
                   Карта
                 </h3>
                 <p className="text-xs md:text-sm text-[var(--text-secondary)]">
@@ -77,10 +77,10 @@ export default function HomePage() {
               
               <Link 
                 href="/spots/create" 
-                className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-2xl p-4 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[120px] md:min-h-[140px] flex flex-col items-center justify-center"
+                className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl md:rounded-2xl p-3 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[100px] md:min-h-[140px] flex flex-col items-center justify-center"
               >
-                <div className="text-3xl md:text-4xl mb-3">➕</div>
-                <h3 className="text-sm md:text-base font-bold text-[var(--text-primary)] mb-1">
+                <div className="text-2xl md:text-4xl mb-2 md:mb-3">➕</div>
+                <h3 className="text-xs md:text-base font-bold text-[var(--text-primary)] mb-1">
                   Сдать место
                 </h3>
                 <p className="text-xs md:text-sm text-[var(--text-secondary)]">
@@ -90,10 +90,10 @@ export default function HomePage() {
               
               <Link 
                 href="/pwa-demo" 
-                className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-2xl p-4 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[120px] md:min-h-[140px] flex flex-col items-center justify-center"
+                className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl md:rounded-2xl p-3 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[100px] md:min-h-[140px] flex flex-col items-center justify-center"
               >
-                <div className="text-3xl md:text-4xl mb-3">🚀</div>
-                <h3 className="text-sm md:text-base font-bold text-[var(--text-primary)] mb-1">
+                <div className="text-2xl md:text-4xl mb-2 md:mb-3">🚀</div>
+                <h3 className="text-xs md:text-base font-bold text-[var(--text-primary)] mb-1">
                   PWA Демо
                 </h3>
                 <p className="text-xs md:text-sm text-[var(--text-secondary)]">
@@ -104,48 +104,48 @@ export default function HomePage() {
           </section>
 
           {/* Популярные места */}
-          <section className="mb-8 md:mb-12">
-            <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] mb-6 text-center">
+          <section className="mb-6 md:mb-12">
+            <h2 className="text-lg md:text-2xl font-bold text-[var(--text-primary)] mb-4 md:mb-6 text-center">
               Популярные места
             </h2>
-            <div className="space-y-4 md:space-y-6">
-              <div className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-2xl overflow-hidden transition-all duration-300 hover:bg-[var(--bg-card)]">
-                <div className="h-32 md:h-40 overflow-hidden">
+            <div className="space-y-3 md:space-y-6">
+              <div className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl md:rounded-2xl overflow-hidden transition-all duration-300 hover:bg-[var(--bg-card)]">
+                <div className="h-24 md:h-40 overflow-hidden">
                   <img 
                     src="https://images.unsplash.com/photo-1520172313-4272701b72c1?w=800&h=600&fit=crop" 
                     alt="Парковка у Красной площади"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] mb-2">
+                <div className="p-3 md:p-6">
+                  <h3 className="text-sm md:text-xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">
                     Парковка у Красной площади
                   </h3>
-                  <p className="text-sm md:text-base text-[var(--text-secondary)] mb-3">
+                  <p className="text-xs md:text-base text-[var(--text-secondary)] mb-2 md:mb-3">
                     Красная площадь, 1, Москва
                   </p>
-                  <p className="text-base md:text-lg font-bold text-[var(--accent-primary)]">
+                  <p className="text-sm md:text-lg font-bold text-[var(--accent-primary)]">
                     200 ₽/час
                   </p>
                 </div>
               </div>
               
-              <div className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-2xl overflow-hidden transition-all duration-300 hover:bg-[var(--bg-card)]">
-                <div className="h-32 md:h-40 overflow-hidden">
+              <div className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl md:rounded-2xl overflow-hidden transition-all duration-300 hover:bg-[var(--bg-card)]">
+                <div className="h-24 md:h-40 overflow-hidden">
                   <img 
                     src="https://images.unsplash.com/photo-1520172313-4272701b72c1?w=800&h=600&fit=crop" 
                     alt="Парковка у ТЦ"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] mb-2">
+                <div className="p-3 md:p-6">
+                  <h3 className="text-sm md:text-xl font-bold text-[var(--text-primary)] mb-1 md:mb-2">
                     Парковка у ТЦ
                   </h3>
-                  <p className="text-sm md:text-base text-[var(--text-secondary)] mb-3">
+                  <p className="text-xs md:text-base text-[var(--text-secondary)] mb-2 md:mb-3">
                     Тверская улица, 15, Москва
                   </p>
-                  <p className="text-base md:text-lg font-bold text-[var(--accent-primary)]">
+                  <p className="text-sm md:text-lg font-bold text-[var(--accent-primary)]">
                     150 ₽/час
                   </p>
                 </div>
