@@ -29,21 +29,6 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* PWA Install Section */}
-          <section className="bg-[var(--bg-surface)] backdrop-blur-xl rounded-lg md:rounded-2xl p-3 md:p-8 mb-3 md:mb-8 border border-[var(--border-primary)] w-full max-w-full">
-            <div className="text-center w-full max-w-full">
-              <div className="text-2xl md:text-6xl mb-2 md:mb-4">📱</div>
-              <h2 className="text-base md:text-2xl font-bold text-[var(--text-primary)] mb-2 md:mb-3 break-words">
-                Установите приложение
-              </h2>
-              <p className="text-[var(--text-secondary)] text-xs md:text-base mb-3 md:mb-6 max-w-full break-words">
-                Добавьте приложение на главный экран для быстрого доступа
-              </p>
-              <div className="w-full max-w-full">
-                <PWAInstallButton />
-              </div>
-            </div>
-          </section>
 
           {/* Быстрые действия */}
           <section className="mb-3 md:mb-8 w-full max-w-full">
@@ -91,15 +76,15 @@ export default function HomePage() {
               </Link>
               
               <Link 
-                href="/pwa-demo" 
+                href="/pwa-install" 
                 className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-lg md:rounded-2xl p-2 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[80px] md:min-h-[140px] flex flex-col items-center justify-center w-full max-w-full"
               >
-                <div className="text-xl md:text-4xl mb-1 md:mb-3">🚀</div>
+                <div className="text-xl md:text-4xl mb-1 md:mb-3">📱</div>
                 <h3 className="text-xs md:text-base font-bold text-[var(--text-primary)] mb-1 break-words">
-                  PWA Демо
+                  Установить приложение
                 </h3>
                 <p className="text-xs md:text-sm text-[var(--text-secondary)] break-words">
-                  Тестирование функций
+                  PWA инструкции
                 </p>
               </Link>
             </div>
