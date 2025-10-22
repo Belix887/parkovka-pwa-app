@@ -12,8 +12,8 @@ export default function PWAInstallPage() {
       {/* Мобильная навигация */}
       <MobileNavigation />
       
-      {/* Основной контент с отступом для мобильной шапки */}
-      <div className="pt-14 md:pt-0 w-full max-w-full">
+      {/* Основной контент */}
+      <div className="w-full max-w-full">
         <div className="container w-full max-w-full">
           {/* Заголовок страницы */}
           <section className="text-center py-4 md:py-8 mb-4 md:mb-8 w-full max-w-full">

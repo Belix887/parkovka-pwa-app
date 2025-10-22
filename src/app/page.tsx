@@ -11,8 +11,8 @@ export default function HomePage() {
       {/* Мобильная навигация */}
       <MobileNavigation />
       
-      {/* Основной контент с отступом для мобильной шапки */}
-      <div className="pt-14 md:pt-0 w-full max-w-full">
+      {/* Основной контент */}
+      <div className="w-full max-w-full">
         <div className="container w-full max-w-full">
           {/* Приветственная секция */}
           <section className="text-center py-4 md:py-12 mb-3 md:mb-8 w-full max-w-full">

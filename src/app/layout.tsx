@@ -33,12 +33,13 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ToastProvider>
-          <nav className="sticky top-0 z-50 bg-[var(--bg-secondary)] backdrop-blur-md border-b border-[var(--border-primary)] shadow-lg">
+          {/* Десктопная навигация - скрыта на мобильных */}
+          <nav className="hidden md:block sticky top-0 z-50 bg-[var(--bg-secondary)] backdrop-blur-md border-b border-[var(--border-primary)] shadow-lg">
             <div className="container">
               <div className="flex justify-between items-center py-4">
                 <Logo href="/" size="md" showText={true} />
                 
-                <div className="hidden md:flex items-center gap-8">
+                <div className="flex items-center gap-8">
                   <Link 
                     href="/catalog" 
                     className="group text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-all duration-300 font-medium relative"
