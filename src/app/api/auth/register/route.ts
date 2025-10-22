@@ -7,10 +7,19 @@ import { createSession, getSessionCookie } from "@/lib/session";
 export async function POST(req: Request) {
 	try {
     const data = await req.json();
+    console.log("Register request data:", data);
+    
     // Нормализуем email
     if (data && typeof data.email === "string") data.email = data.email.trim().toLowerCase();
+    
     const parsed = registerSchema.safeParse(data);
-		if (!parsed.success) return NextResponse.json({ error: "Некорректные данные" }, { status: 400 });
+		if (!parsed.success) {
+      console.log("Validation error:", parsed.error);
+      return NextResponse.json({ 
+        error: "Некорректные данные", 
+        details: parsed.error.errors 
+      }, { status: 400 });
+    }
 
 		const exists = await prisma.user.findUnique({ where: { email: parsed.data.email } });
 		if (exists) return NextResponse.json({ error: "Пользователь уже существует" }, { status: 409 });
@@ -26,6 +35,8 @@ export async function POST(req: Request) {
 			},
 		});
 
+    console.log("User created successfully:", user.id);
+
 		// Создаём сессию сразу после регистрации
 		const token = await createSession({ id: user.id, role: user.role, email: user.email });
 		const res = NextResponse.json({ id: user.id, email: user.email });
@@ -33,7 +44,11 @@ export async function POST(req: Request) {
 		return res;
 	} catch (err: any) {
 		console.error("Register error:", err);
-		return NextResponse.json({ error: "Внутренняя ошибка сервера" }, { status: 500 });
+    console.error("Error details:", err.message, err.stack);
+		return NextResponse.json({ 
+      error: "Внутренняя ошибка сервера", 
+      details: process.env.NODE_ENV === "development" ? err.message : undefined 
+    }, { status: 500 });
 	}
 }
 

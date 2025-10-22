@@ -35,7 +35,15 @@ export default function RegisterPage() {
         return; // не показываем никаких ошибок после успеха
       } else {
         const errorData = await res.json();
-        showError("Ошибка регистрации", errorData.error || "Неизвестная ошибка");
+        console.log("Registration error response:", errorData);
+        
+        // Показываем детальную ошибку валидации
+        if (errorData.details && Array.isArray(errorData.details)) {
+          const validationErrors = errorData.details.map((err: any) => err.message).join(", ");
+          showError("Ошибка валидации", validationErrors);
+        } else {
+          showError("Ошибка регистрации", errorData.error || "Неизвестная ошибка");
+        }
       }
     } catch (err: any) {
       // Не дублируем тосты при редких сбоях сети, просто логируем

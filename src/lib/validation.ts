@@ -10,10 +10,11 @@ export const registerSchema = z.object({
 		.max(20)
 		.refine((val) => {
 			const digits = val.replace(/\D/g, "");
-			if (digits.length !== 11) return false;
-			return digits.startsWith("7") || digits.startsWith("8");
+			// Принимаем телефоны с 10-11 цифрами, начинающиеся с 7, 8 или 9
+			if (digits.length < 10 || digits.length > 11) return false;
+			return digits.startsWith("7") || digits.startsWith("8") || digits.startsWith("9");
 		}, {
-			message: "Телефон должен начинаться с +7 или 8 и содержать 11 цифр",
+			message: "Телефон должен содержать 10-11 цифр и начинаться с 7, 8 или 9",
 		}),
 });
 
@@ -56,6 +57,22 @@ export const blackoutCreateSchema = z.object({
 	from: z.string().datetime(),
 	to: z.string().datetime(),
 	reason: z.string().max(200).optional(),
+});
+
+export const userUpdateSchema = z.object({
+	name: z.string().min(1).max(80).optional(),
+	phone: z
+		.string()
+		.min(5)
+		.max(20)
+		.refine((val) => {
+			const digits = val.replace(/\D/g, "");
+			// Принимаем телефоны с 10-11 цифрами, начинающиеся с 7, 8 или 9
+			if (digits.length < 10 || digits.length > 11) return false;
+			return digits.startsWith("7") || digits.startsWith("8") || digits.startsWith("9");
+		}, {
+			message: "Телефон должен содержать 10-11 цифр и начинаться с 7, 8 или 9",
+		}).optional(),
 });
 
 
