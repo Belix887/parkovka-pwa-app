@@ -5,11 +5,14 @@ import { MotionCard, CardHeader, CardContent, CardFooter } from "@/components/ui
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
+import { MobileNavigation } from "@/components/ui/MobileNavigation";
+import { useRouter } from "next/navigation";
 
 export default function CreateSpotPage() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const { showSuccess, showError, showInfo } = useToast();
+  const router = useRouter();
 
   async function handleFilePick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -70,6 +73,7 @@ export default function CreateSpotPage() {
         showSuccess("Место создано", "Ваше место отправлено на модерацию");
         (e.currentTarget as HTMLFormElement).reset();
         setPhotos([]);
+        router.push("/profile");
       } else {
         const errorData = await r.json();
         showError("Ошибка создания", errorData.error || "Не удалось создать место");
@@ -82,141 +86,144 @@ export default function CreateSpotPage() {
   }
 
   return (
-    <div className="min-h-screen py-12">
-      <div className="container">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
-            Создать парковочное место
-          </h1>
-          <p className="text-[var(--text-secondary)] text-lg max-w-2xl mx-auto">
-            Добавьте свое парковочное место и начните зарабатывать на аренде
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] via-[var(--bg-secondary)] to-[var(--bg-tertiary)]">
+      {/* Мобильная навигация */}
+      <MobileNavigation />
+      
+      {/* Основной контент с отступом для мобильной шапки */}
+      <div className="pt-16 md:pt-0">
+        <div className="container py-6 md:py-12">
+          <div className="text-center mb-8 md:mb-12">
+            <h1 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
+              Создать парковочное место
+            </h1>
+            <p className="text-[var(--text-secondary)] text-base md:text-lg max-w-2xl mx-auto">
+              Добавьте свое парковочное место и начните зарабатывать на аренде
+            </p>
+          </div>
 
-        <form onSubmit={onSubmit} className="grid lg:grid-cols-2 gap-8">
-          {/* Основная информация */}
-          <MotionCard>
-            <CardHeader 
-              title="Основная информация" 
-              subtitle="Заполните базовые данные о парковочном месте"
-              icon="📝"
-            />
-            <CardContent>
-              <div className="space-y-6">
-                <Input
-                  name="title"
-                  label="Название места"
-                  placeholder="Например: Удобная парковка в центре"
-                  required
-                />
-                
-                <div>
-                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                    Описание
-                  </label>
-                  <textarea 
-                    name="description" 
-                    placeholder="Опишите особенности вашего парковочного места..."
-                    className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300"
-                    rows={4}
-                    required 
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={onSubmit} className="space-y-6 md:space-y-8">
+            {/* Основная информация */}
+            <MotionCard className="mobile-card">
+              <CardHeader 
+                title="Основная информация" 
+                subtitle="Заполните базовые данные о парковочном месте"
+                icon="📝"
+              />
+              <CardContent>
+                <div className="space-y-4 md:space-y-6 mobile-form">
                   <Input
-                    name="pricePerHour"
-                    label="Цена за час (копейки)"
-                    type="number"
-                    placeholder="10000"
+                    name="title"
+                    label="Название места"
+                    placeholder="Например: Удобная парковка в центре"
                     required
                   />
+                  
                   <div>
                     <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                      Тип доступа
+                      Описание
                     </label>
-                    <select 
-                      name="accessType" 
-                      className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300"
-                    >
-                      <option value="PRIVATE_GATE">Закрытая территория</option>
-                      <option value="STREET">Улица</option>
-                      <option value="GARAGE">Гараж</option>
-                      <option value="YARD">Двор</option>
-                      <option value="OTHER">Другое</option>
-                    </select>
+                    <textarea 
+                      name="description" 
+                      placeholder="Опишите особенности вашего парковочного места..."
+                      className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form"
+                      rows={4}
+                      required 
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      name="pricePerHour"
+                      label="Цена за час (копейки)"
+                      type="number"
+                      placeholder="10000"
+                      required
+                    />
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                        Тип доступа
+                      </label>
+                      <select 
+                        name="accessType" 
+                        className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form"
+                      >
+                        <option value="PRIVATE_GATE">Закрытая территория</option>
+                        <option value="STREET">Улица</option>
+                        <option value="GARAGE">Гараж</option>
+                        <option value="YARD">Двор</option>
+                        <option value="OTHER">Другое</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3 md:gap-4">
+                    <Input
+                      name="sizeL"
+                      label="Длина (м)"
+                      type="number"
+                      step="0.1"
+                      placeholder="5.0"
+                      required
+                    />
+                    <Input
+                      name="sizeW"
+                      label="Ширина (м)"
+                      type="number"
+                      step="0.1"
+                      placeholder="2.5"
+                      required
+                    />
+                    <Input
+                      name="sizeH"
+                      label="Высота (м)"
+                      type="number"
+                      step="0.1"
+                      placeholder="2.2"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                      Адрес
+                    </label>
+                    <input 
+                      name="address" 
+                      placeholder="Укажите точный адрес"
+                      className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      name="geoLat"
+                      label="Широта"
+                      type="number"
+                      step="any"
+                      placeholder="55.7558"
+                    />
+                    <Input
+                      name="geoLng"
+                      label="Долгота"
+                      type="number"
+                      step="any"
+                      placeholder="37.6176"
+                    />
                   </div>
                 </div>
+              </CardContent>
+            </MotionCard>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <Input
-                    name="sizeL"
-                    label="Длина (м)"
-                    type="number"
-                    step="0.1"
-                    placeholder="5.0"
-                    required
-                  />
-                  <Input
-                    name="sizeW"
-                    label="Ширина (м)"
-                    type="number"
-                    step="0.1"
-                    placeholder="2.5"
-                    required
-                  />
-                  <Input
-                    name="sizeH"
-                    label="Высота (м)"
-                    type="number"
-                    step="0.1"
-                    placeholder="2.2"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                    Адрес
-                  </label>
-                  <input 
-                    name="address" 
-                    placeholder="Укажите точный адрес"
-                    className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    name="geoLat"
-                    label="Широта"
-                    type="number"
-                    step="any"
-                    placeholder="55.7558"
-                  />
-                  <Input
-                    name="geoLng"
-                    label="Долгота"
-                    type="number"
-                    step="any"
-                    placeholder="37.6176"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </MotionCard>
-
-          {/* Дополнительные опции и фото */}
-          <div className="space-y-8">
             {/* Особенности */}
-            <MotionCard>
+            <MotionCard className="mobile-card">
               <CardHeader 
                 title="Особенности места" 
                 subtitle="Отметьте доступные удобства"
                 icon="✨"
               />
               <CardContent>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
                   {[
                     { name: "covered", label: "Крытое", icon: "🏠" },
                     { name: "guarded", label: "Под охраной", icon: "🛡️" },
@@ -232,7 +239,7 @@ export default function CreateSpotPage() {
                         className="w-4 h-4 text-[var(--accent-primary)] bg-[var(--bg-surface)] border-[var(--border-primary)] rounded focus:ring-[var(--accent-primary)] focus:ring-2"
                       />
                       <span className="text-lg">{icon}</span>
-                      <span className="text-[var(--text-primary)] font-medium">{label}</span>
+                      <span className="text-[var(--text-primary)] font-medium text-sm md:text-base">{label}</span>
                     </label>
                   ))}
                 </div>
@@ -240,7 +247,7 @@ export default function CreateSpotPage() {
             </MotionCard>
 
             {/* Фотографии */}
-            <MotionCard>
+            <MotionCard className="mobile-card">
               <CardHeader 
                 title="Фотографии" 
                 subtitle="Добавьте до 10 фотографий места"
@@ -254,7 +261,7 @@ export default function CreateSpotPage() {
                         <img 
                           src={photo} 
                           alt={`Фото ${i + 1}`} 
-                          className="w-full h-24 object-cover rounded-xl"
+                          className="w-full h-20 md:h-24 object-cover rounded-xl"
                         />
                         <button
                           type="button"
@@ -269,14 +276,14 @@ export default function CreateSpotPage() {
                   
                   <label className="block w-full">
                     <input type="file" accept="image/*" className="hidden" onChange={handleFilePick} />
-                    <Button type="button" variant="outline" icon="📷" className="w-full">Добавить фото ({photos.length}/10)</Button>
+                    <Button type="button" variant="outline" icon="📷" className="w-full mobile-btn">Добавить фото ({photos.length}/10)</Button>
                   </label>
                 </div>
               </CardContent>
             </MotionCard>
 
             {/* Правила */}
-            <MotionCard>
+            <MotionCard className="mobile-card">
               <CardHeader 
                 title="Правила и условия" 
                 subtitle="Укажите особые требования к арендаторам"
@@ -290,7 +297,7 @@ export default function CreateSpotPage() {
                   <textarea 
                     name="rules" 
                     placeholder="Например: Не курить, соблюдать тишину после 22:00..."
-                    className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300"
+                    className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form"
                     rows={3}
                   />
                 </div>
@@ -298,13 +305,13 @@ export default function CreateSpotPage() {
             </MotionCard>
 
             {/* Кнопка отправки */}
-            <MotionCard>
+            <MotionCard className="mobile-card">
               <CardContent>
                 <Button
                   type="submit"
                   loading={loading}
                   size="lg"
-                  className="w-full"
+                  className="w-full mobile-btn"
                   icon="🚀"
                 >
                   {loading ? "Создание..." : "Отправить на модерацию"}
@@ -314,8 +321,8 @@ export default function CreateSpotPage() {
                 </p>
               </CardContent>
             </MotionCard>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

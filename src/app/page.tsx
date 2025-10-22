@@ -2,241 +2,158 @@
 
 import Link from "next/link";
 import { PWAInstallButton } from "@/components/pwa/PWAComponents";
+import { MobileNavigation } from "@/components/ui/MobileNavigation";
+import { getCurrentUser } from "@/lib/auth";
 
 export default function HomePage() {
   return (
-    <div style={{ 
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #16213e 100%)',
-      color: 'white',
-      padding: '20px'
-    }}>
-      {/* Приветственная секция */}
-      <section style={{
-        textAlign: 'center',
-        padding: '40px 0',
-        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))',
-        borderRadius: '24px',
-        marginBottom: '30px'
-      }}>
-        <h1 style={{
-          fontSize: '28px',
-          fontWeight: 'bold',
-          marginBottom: '16px',
-          lineHeight: '1.2'
-        }}>
-          Найдите идеальное
-          <span style={{
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}> парковочное место</span>
-        </h1>
-        <p style={{
-          fontSize: '16px',
-          color: '#94a3b8',
-          lineHeight: '1.5',
-          marginBottom: '0'
-        }}>
-          Арендуйте частные парковочные места или сдавайте свои в аренду
-        </p>
-      </section>
+    <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] via-[var(--bg-secondary)] to-[var(--bg-tertiary)]">
+      {/* Мобильная навигация */}
+      <MobileNavigation />
+      
+      {/* Основной контент с отступом для мобильной шапки */}
+      <div className="pt-16 md:pt-0">
+        <div className="container">
+          {/* Приветственная секция */}
+          <section className="text-center py-8 md:py-12 mb-6 md:mb-8">
+            <div className="bg-gradient-to-r from-[var(--accent-primary)]/10 to-[var(--accent-secondary)]/10 rounded-2xl md:rounded-3xl p-6 md:p-12">
+              <h1 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6 leading-tight">
+                Найдите идеальное
+                <span className="bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent">
+                  {" "}парковочное место
+                </span>
+              </h1>
+              <p className="text-[var(--text-secondary)] text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
+                Арендуйте частные парковочные места или сдавайте свои в аренду
+              </p>
+            </div>
+          </section>
 
-      {/* PWA Install Section */}
-      <section style={{
-        background: 'rgba(0, 0, 0, 0.9)',
-        backdropFilter: 'blur(20px)',
-        borderRadius: '20px',
-        padding: '24px 20px',
-        margin: '20px 0',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        textAlign: 'center'
-      }}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '16px'
-        }}>
-          <div style={{ fontSize: '48px', marginBottom: '8px' }}>📱</div>
-          <div>
-            <h2 style={{
-              fontSize: '20px',
-              fontWeight: 'bold',
-              color: 'white',
-              marginBottom: '8px'
-            }}>Установите приложение</h2>
-            <p style={{
-              color: '#94a3b8',
-              fontSize: '16px',
-              lineHeight: '1.4',
-              marginBottom: '16px'
-            }}>
-              Добавьте приложение на главный экран для быстрого доступа
-            </p>
-          </div>
-          <PWAInstallButton />
-        </div>
-      </section>
+          {/* PWA Install Section */}
+          <section className="bg-[var(--bg-surface)] backdrop-blur-xl rounded-2xl p-6 md:p-8 mb-6 md:mb-8 border border-[var(--border-primary)]">
+            <div className="text-center">
+              <div className="text-4xl md:text-6xl mb-4">📱</div>
+              <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] mb-3">
+                Установите приложение
+              </h2>
+              <p className="text-[var(--text-secondary)] text-sm md:text-base mb-6 max-w-md mx-auto">
+                Добавьте приложение на главный экран для быстрого доступа
+              </p>
+              <PWAInstallButton />
+            </div>
+          </section>
 
-      {/* Быстрые действия */}
-      <section style={{ margin: '30px 0' }}>
-        <h2 style={{
-          fontSize: '22px',
-          fontWeight: 'bold',
-          color: 'white',
-          marginBottom: '20px',
-          textAlign: 'center'
-        }}>Быстрые действия</h2>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '16px'
-        }}>
-          <Link href="/catalog" style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-            padding: '20px',
-            textDecoration: 'none',
-            color: 'white',
-            transition: 'all 0.3s',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            minHeight: '120px',
-            justifyContent: 'center'
-          }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>🚗</div>
-            <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 4px 0', color: 'white' }}>Найти парковку</h3>
-              <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0' }}>Поиск по городу</p>
+          {/* Быстрые действия */}
+          <section className="mb-6 md:mb-8">
+            <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] mb-6 text-center">
+              Быстрые действия
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              <Link 
+                href="/catalog" 
+                className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-2xl p-4 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[120px] md:min-h-[140px] flex flex-col items-center justify-center"
+              >
+                <div className="text-3xl md:text-4xl mb-3">🚗</div>
+                <h3 className="text-sm md:text-base font-bold text-[var(--text-primary)] mb-1">
+                  Найти парковку
+                </h3>
+                <p className="text-xs md:text-sm text-[var(--text-secondary)]">
+                  Поиск по городу
+                </p>
+              </Link>
+              
+              <Link 
+                href="/map" 
+                className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-2xl p-4 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[120px] md:min-h-[140px] flex flex-col items-center justify-center"
+              >
+                <div className="text-3xl md:text-4xl mb-3">🗺️</div>
+                <h3 className="text-sm md:text-base font-bold text-[var(--text-primary)] mb-1">
+                  Карта
+                </h3>
+                <p className="text-xs md:text-sm text-[var(--text-secondary)]">
+                  Интерактивная карта
+                </p>
+              </Link>
+              
+              <Link 
+                href="/spots/create" 
+                className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-2xl p-4 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[120px] md:min-h-[140px] flex flex-col items-center justify-center"
+              >
+                <div className="text-3xl md:text-4xl mb-3">➕</div>
+                <h3 className="text-sm md:text-base font-bold text-[var(--text-primary)] mb-1">
+                  Сдать место
+                </h3>
+                <p className="text-xs md:text-sm text-[var(--text-secondary)]">
+                  Добавить парковку
+                </p>
+              </Link>
+              
+              <Link 
+                href="/pwa-demo" 
+                className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-2xl p-4 md:p-6 text-center transition-all duration-300 hover:bg-[var(--bg-card)] hover:scale-105 min-h-[120px] md:min-h-[140px] flex flex-col items-center justify-center"
+              >
+                <div className="text-3xl md:text-4xl mb-3">🚀</div>
+                <h3 className="text-sm md:text-base font-bold text-[var(--text-primary)] mb-1">
+                  PWA Демо
+                </h3>
+                <p className="text-xs md:text-sm text-[var(--text-secondary)]">
+                  Тестирование функций
+                </p>
+              </Link>
             </div>
-          </Link>
-          
-          <Link href="/map" style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-            padding: '20px',
-            textDecoration: 'none',
-            color: 'white',
-            transition: 'all 0.3s',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            minHeight: '120px',
-            justifyContent: 'center'
-          }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>🗺️</div>
-            <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 4px 0', color: 'white' }}>Карта</h3>
-              <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0' }}>Интерактивная карта</p>
-            </div>
-          </Link>
-          
-          <Link href="/spots/create" style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-            padding: '20px',
-            textDecoration: 'none',
-            color: 'white',
-            transition: 'all 0.3s',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            minHeight: '120px',
-            justifyContent: 'center'
-          }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>➕</div>
-            <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 4px 0', color: 'white' }}>Сдать место</h3>
-              <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0' }}>Добавить парковку</p>
-            </div>
-          </Link>
-          
-          <Link href="/pwa-demo" style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-            padding: '20px',
-            textDecoration: 'none',
-            color: 'white',
-            transition: 'all 0.3s',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            minHeight: '120px',
-            justifyContent: 'center'
-          }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>🚀</div>
-            <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 4px 0', color: 'white' }}>PWA Демо</h3>
-              <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0' }}>Тестирование функций</p>
-            </div>
-          </Link>
-        </div>
-      </section>
+          </section>
 
-      {/* Популярные места */}
-      <section style={{ margin: '30px 0' }}>
-        <h2 style={{
-          fontSize: '22px',
-          fontWeight: 'bold',
-          color: 'white',
-          marginBottom: '20px',
-          textAlign: 'center'
-        }}>Популярные места</h2>
-        <div style={{ display: 'grid', gap: '16px' }}>
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            transition: 'all 0.3s'
-          }}>
-            <div style={{ height: '120px', overflow: 'hidden', position: 'relative' }}>
-              <img 
-                src="https://images.unsplash.com/photo-1520172313-4272701b72c1?w=800&h=600&fit=crop" 
-                alt="Парковка у Красной площади"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+          {/* Популярные места */}
+          <section className="mb-8 md:mb-12">
+            <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] mb-6 text-center">
+              Популярные места
+            </h2>
+            <div className="space-y-4 md:space-y-6">
+              <div className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-2xl overflow-hidden transition-all duration-300 hover:bg-[var(--bg-card)]">
+                <div className="h-32 md:h-40 overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1520172313-4272701b72c1?w=800&h=600&fit=crop" 
+                    alt="Парковка у Красной площади"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-4 md:p-6">
+                  <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] mb-2">
+                    Парковка у Красной площади
+                  </h3>
+                  <p className="text-sm md:text-base text-[var(--text-secondary)] mb-3">
+                    Красная площадь, 1, Москва
+                  </p>
+                  <p className="text-base md:text-lg font-bold text-[var(--accent-primary)]">
+                    200 ₽/час
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-2xl overflow-hidden transition-all duration-300 hover:bg-[var(--bg-card)]">
+                <div className="h-32 md:h-40 overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1520172313-4272701b72c1?w=800&h=600&fit=crop" 
+                    alt="Парковка у ТЦ"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-4 md:p-6">
+                  <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] mb-2">
+                    Парковка у ТЦ
+                  </h3>
+                  <p className="text-sm md:text-base text-[var(--text-secondary)] mb-3">
+                    Тверская улица, 15, Москва
+                  </p>
+                  <p className="text-base md:text-lg font-bold text-[var(--accent-primary)]">
+                    150 ₽/час
+                  </p>
+                </div>
+              </div>
             </div>
-            <div style={{ padding: '16px' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', margin: '0 0 8px 0' }}>Парковка у Красной площади</h3>
-              <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0 0 8px 0' }}>Красная площадь, 1, Москва</p>
-              <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#3b82f6', margin: '0' }}>200 ₽/час</p>
-            </div>
-          </div>
-          
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            transition: 'all 0.3s'
-          }}>
-            <div style={{ height: '120px', overflow: 'hidden', position: 'relative' }}>
-              <img 
-                src="https://images.unsplash.com/photo-1520172313-4272701b72c1?w=800&h=600&fit=crop" 
-                alt="Парковка у ТЦ"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </div>
-            <div style={{ padding: '16px' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', margin: '0 0 8px 0' }}>Парковка у ТЦ</h3>
-              <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0 0 8px 0' }}>Тверская улица, 15, Москва</p>
-              <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#3b82f6', margin: '0' }}>150 ₽/час</p>
-            </div>
-          </div>
+          </section>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

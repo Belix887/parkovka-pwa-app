@@ -62,19 +62,55 @@ body {
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 2rem;
+  }
 }
 
 .container-sm {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-sm {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-sm {
+    padding: 0 2rem;
+  }
 }
 
 .container-xs {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-xs {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-xs {
+    padding: 0 2rem;
+  }
 }
 
 /* Утилиты для градиентов */
@@ -388,4 +424,78 @@ input[type="range"]::-moz-range-thumb:hover {
 .slider-input::-moz-range-thumb:focus {
   outline: none;
   box-shadow: none;
+}
+
+/* Мобильные стили */
+@media (max-width: 768px) {
+  /* Уменьшаем отступы для мобильных */
+  .container,
+  .container-sm,
+  .container-xs {
+    padding: 0 1rem;
+  }
+
+  /* Мобильная типографика */
+  h1 {
+    font-size: 1.875rem; /* 30px */
+    line-height: 2.25rem; /* 36px */
+  }
+
+  h2 {
+    font-size: 1.5rem; /* 24px */
+    line-height: 2rem; /* 32px */
+  }
+
+  h3 {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.75rem; /* 28px */
+  }
+
+  /* Мобильные кнопки */
+  .mobile-btn {
+    min-height: 44px; /* Apple HIG recommendation */
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  /* Мобильные карточки */
+  .mobile-card {
+    margin-bottom: 1rem;
+    border-radius: 1rem;
+    padding: 1rem;
+  }
+
+  /* Мобильная сетка */
+  .mobile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* Мобильные формы */
+  .mobile-form input,
+  .mobile-form textarea,
+  .mobile-form select {
+    min-height: 44px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  /* Скрытие элементов на мобильных */
+  .mobile-hidden {
+    display: none;
+  }
+
+  /* Показ только на мобильных */
+  .mobile-only {
+    display: block;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none;
+  }
 }
