@@ -9,23 +9,26 @@ const parkingIcon = L.divIcon({
   className: 'custom-parking-icon',
   html: `
     <div style="
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      width: 30px;
-      height: 30px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      border: 3px solid white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 4px solid white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 0 2px rgba(37, 99, 235, 0.3);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 20px;
       color: white;
-      font-weight: bold;
+      font-weight: 900;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      letter-spacing: -0.5px;
     ">P</div>
   `,
-  iconSize: [30, 30],
-  iconAnchor: [15, 15],
-  popupAnchor: [0, -15]
+  iconSize: [40, 40],
+  iconAnchor: [20, 20],
+  popupAnchor: [0, -20]
 });
 
 interface ParkingSpot {
@@ -161,51 +164,54 @@ export default function LeafletMap({
             position={[spot.geoLat, spot.geoLng] as [number, number]} 
             icon={parkingIcon}
           >
-            <Popup>
-              <div className="p-3 min-w-[250px]">
+            <Popup maxWidth={320} className="custom-popup">
+              <div className="p-4 min-w-[280px] max-w-[320px] bg-white">
                 <div className="space-y-3">
                   <div>
-                    <h3 className="font-bold text-lg text-gray-800 mb-1">
+                    <h3 className="font-bold text-xl text-gray-900 mb-2 leading-tight">
                       {spot.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-2">
-                      📍 {spot.address}
+                    <p className="text-sm text-gray-700 mb-3 flex items-start gap-1.5">
+                      <span className="text-base">📍</span>
+                      <span className="flex-1">{spot.address}</span>
                     </p>
-                    <div className="text-lg font-bold text-blue-600">
+                    <div className="text-2xl font-bold text-blue-600 mb-1">
                       {formatPrice(spot.pricePerHour)}
                     </div>
                   </div>
                   
                   {spot.photos.length > 0 && (
-                    <div className="rounded-lg overflow-hidden">
+                    <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
                       <img 
                         src={spot.photos[0].url} 
                         alt={spot.title}
-                        className="w-full h-24 object-cover"
+                        className="w-full h-32 object-cover"
                       />
                     </div>
                   )}
                   
-                  <div>
-                    <h4 className="font-semibold text-sm text-gray-700 mb-2">
-                      Особенности:
-                    </h4>
-                    <div className="flex flex-wrap gap-1">
-                      {getFeatures(spot).map((feature, index) => (
-                        <span 
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                        >
-                          {feature}
-                        </span>
-                      ))}
+                  {getFeatures(spot).length > 0 && (
+                    <div>
+                      <h4 className="font-semibold text-sm text-gray-800 mb-2">
+                        Особенности:
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {getFeatures(spot).map((feature, index) => (
+                          <span 
+                            key={index}
+                            className="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-md border border-blue-200"
+                          >
+                            {feature}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   
-                  <div className="pt-2 border-t">
+                  <div className="pt-3 border-t border-gray-200">
                     <a 
                       href={`/spots/${spot.id}`}
-                      className="inline-block w-full text-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                      className="inline-block w-full text-center bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors text-sm font-semibold shadow-sm"
                     >
                       Подробнее
                     </a>

@@ -73,6 +73,32 @@ a[href*="leaflet"] {
   display: none !important;
 }
 
+/* Улучшаем стилизацию попапов на карте */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: auto !important;
+}
+
+.custom-popup .leaflet-popup-content-wrapper {
+  background: white !important;
+}
+
+.leaflet-popup-tip {
+  background: white !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Улучшаем видимость маркеров */
+.custom-parking-icon {
+  z-index: 1000 !important;
+}
+
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
