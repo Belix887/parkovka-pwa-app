@@ -65,10 +65,7 @@ export function AddressAutocomplete({
     setErrorMessage(null);
     
     try {
-      console.log("Fetching suggestions for:", query);
       const results = await suggestAddresses(query);
-      console.log("Received suggestions:", results);
-      
       setSuggestions(results);
       setShowSuggestions(results.length > 0);
       
@@ -122,8 +119,11 @@ export function AddressAutocomplete({
         type="text"
         value={value}
         onChange={handleInputChange}
-        onFocus={() => {
-          if (suggestions.length > 0) {
+        onFocus={async () => {
+          // При фокусе, если есть текст, загружаем предложения
+          if (value.trim().length >= 2) {
+            await fetchSuggestions(value);
+          } else if (suggestions.length > 0) {
             setShowSuggestions(true);
           }
         }}
@@ -143,19 +143,25 @@ export function AddressAutocomplete({
       {showSuggestions && suggestions.length > 0 && (
         <div
           ref={suggestionsRef}
-          className="absolute z-50 w-full mt-1 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl shadow-lg max-h-60 overflow-y-auto"
+          className="absolute z-50 w-full mt-1 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl shadow-xl max-h-60 overflow-y-auto"
+          style={{ 
+            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.3)",
+            maxHeight: "240px",
+            top: "100%"
+          }}
         >
           {suggestions.map((suggestion, index) => (
             <button
-              key={index}
+              key={`${suggestion.lat}-${suggestion.lng}-${index}`}
               type="button"
               onClick={() => handleSelect(suggestion)}
-              className="w-full px-4 py-3 text-left hover:bg-[var(--bg-tertiary)] transition-colors duration-200 border-b border-[var(--border-primary)] last:border-b-0"
+              className="w-full px-4 py-3 text-left hover:bg-[var(--bg-tertiary)] active:bg-[var(--bg-card)] transition-colors duration-200 border-b border-[var(--border-primary)] last:border-b-0 cursor-pointer"
+              onMouseDown={(e) => e.preventDefault()}
             >
-              <div className="flex items-start gap-2">
-                <span className="text-lg">📍</span>
+              <div className="flex items-start gap-3">
+                <span className="text-lg flex-shrink-0">📍</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">
+                  <p className="text-sm font-medium text-[var(--text-primary)] break-words">
                     {suggestion.formattedAddress}
                   </p>
                   <p className="text-xs text-[var(--text-muted)] mt-1">
