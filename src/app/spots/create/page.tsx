@@ -1,12 +1,17 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { MotionCard, CardHeader, CardContent, CardFooter } from "@/components/ui/MotionCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { MobileNavigation } from "@/components/ui/MobileNavigation";
+import { AddressAutocomplete } from "@/components/spot/AddressAutocomplete";
+import { GeocodeSuggestion } from "@/lib/geocoding";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const LeafletMap = dynamic(() => import("@/components/map/LeafletMap"), { ssr: false });
 
 interface FieldErrors {
   [key: string]: string;
@@ -16,6 +21,11 @@ export default function CreateSpotPage() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [address, setAddress] = useState("");
+  const [geoLat, setGeoLat] = useState<number | null>(null);
+  const [geoLng, setGeoLng] = useState<number | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([55.751244, 37.618423]);
+  const formRef = useRef<HTMLFormElement>(null);
   const { showSuccess, showError, showInfo } = useToast();
   const router = useRouter();
 
@@ -46,6 +56,22 @@ export default function CreateSpotPage() {
     }
   }
 
+  const handleAddressSelect = (suggestion: GeocodeSuggestion) => {
+    setGeoLat(suggestion.lat);
+    setGeoLng(suggestion.lng);
+    setMapCenter([suggestion.lat, suggestion.lng]);
+    
+    // Обновляем скрытые поля формы
+    if (formRef.current) {
+      const latInput = formRef.current.querySelector('input[name="geoLat"]') as HTMLInputElement;
+      const lngInput = formRef.current.querySelector('input[name="geoLng"]') as HTMLInputElement;
+      if (latInput) latInput.value = suggestion.lat.toString();
+      if (lngInput) lngInput.value = suggestion.lng.toString();
+    }
+    
+    showInfo("Координаты обновлены", "Адрес найден на карте");
+  };
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     
@@ -55,6 +81,10 @@ export default function CreateSpotPage() {
     const form = e.currentTarget;
     const formData = new FormData(form);
     const body = Object.fromEntries(formData.entries());
+    
+    // Используем координаты из состояния, если они есть
+    const finalGeoLat = geoLat !== null ? geoLat : Number(body.geoLat);
+    const finalGeoLng = geoLng !== null ? geoLng : Number(body.geoLng);
     
     // Базовая валидация на клиенте
     const errors: FieldErrors = {};
@@ -83,16 +113,19 @@ export default function CreateSpotPage() {
     if (!sizeH || sizeH < 1 || sizeH > 20) {
       errors.sizeH = "Высота должна быть от 1 до 20 метров";
     }
-    if (!body.address || String(body.address).trim().length < 5) {
-      errors.address = "Адрес должен содержать минимум 5 символов";
+    const finalAddress = address || String(body.address || "").trim();
+    if (!finalAddress || finalAddress.length < 5) {
+      errors.address = "Адрес должен содержать минимум 5 символов. Выберите адрес из списка";
     }
-    const geoLat = Number(body.geoLat);
-    if (!geoLat || geoLat < -90 || geoLat > 90 || Math.abs(geoLat) < 0.000001) {
-      errors.geoLat = "Укажите корректную широту (от -90 до 90)";
+    // Проверяем координаты (используем из состояния или из формы)
+    const checkGeoLat = finalGeoLat;
+    const checkGeoLng = finalGeoLng;
+    
+    if (!checkGeoLat || checkGeoLat < -90 || checkGeoLat > 90 || Math.abs(checkGeoLat) < 0.000001) {
+      errors.geoLat = "Укажите корректную широту. Выберите адрес из списка или укажите координаты вручную";
     }
-    const geoLng = Number(body.geoLng);
-    if (!geoLng || geoLng < -180 || geoLng > 180 || Math.abs(geoLng) < 0.000001) {
-      errors.geoLng = "Укажите корректную долготу (от -180 до 180)";
+    if (!checkGeoLng || checkGeoLng < -180 || checkGeoLng > 180 || Math.abs(checkGeoLng) < 0.000001) {
+      errors.geoLng = "Укажите корректную долготу. Выберите адрес из списка или укажите координаты вручную";
     }
     if (photos.length === 0) {
       errors.photos = "Добавьте хотя бы одно фото";
@@ -130,9 +163,9 @@ export default function CreateSpotPage() {
       wideEntrance: Boolean(body.wideEntrance),
       accessType: String(body.accessType),
       rules: String(body.rules).trim(),
-      address: String(body.address).trim(),
-      geoLat: Number(geoLat),
-      geoLng: Number(geoLng),
+      address: address || String(body.address).trim(),
+      geoLat: finalGeoLat,
+      geoLng: finalGeoLng,
       photos,
     };
     
@@ -202,7 +235,7 @@ export default function CreateSpotPage() {
             </p>
           </div>
 
-          <form onSubmit={onSubmit} className="space-y-6 md:space-y-8">
+          <form ref={formRef} onSubmit={onSubmit} className="space-y-6 md:space-y-8">
             {/* Основная информация */}
             <MotionCard className="mobile-card">
               <CardHeader 
@@ -302,43 +335,100 @@ export default function CreateSpotPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                      Адрес
+                      Адрес в Москве
                     </label>
-                    <input 
-                      name="address" 
-                      placeholder="Укажите точный адрес"
-                      className={`w-full px-4 py-3 bg-[var(--bg-surface)] border rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form ${
-                        fieldErrors.address ? "border-[var(--accent-error)]" : "border-[var(--border-primary)]"
-                      }`}
+                    <AddressAutocomplete
+                      value={address}
+                      onChange={setAddress}
+                      onSelect={handleAddressSelect}
+                      placeholder="Начните вводить адрес, например: Красная площадь, 1"
+                      error={fieldErrors.address}
                       required
                     />
-                    {fieldErrors.address && (
-                      <p className="mt-2 text-sm text-[var(--accent-error)]">{fieldErrors.address}</p>
-                    )}
+                    <p className="mt-2 text-xs text-[var(--text-muted)]">
+                      💡 Начните вводить адрес, выберите из списка - координаты заполнятся автоматически
+                    </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input
-                      name="geoLat"
-                      label="Широта"
-                      type="number"
-                      step="any"
-                      placeholder="55.7558"
-                      required
-                      error={fieldErrors.geoLat}
-                      helperText="От -90 до 90"
-                    />
-                    <Input
-                      name="geoLng"
-                      label="Долгота"
-                      type="number"
-                      step="any"
-                      placeholder="37.6176"
-                      required
-                      error={fieldErrors.geoLng}
-                      helperText="От -180 до 180"
-                    />
-                  </div>
+                  {/* Карта с выбранным местом */}
+                  {(geoLat !== null && geoLng !== null) && (
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                        Расположение на карте
+                      </label>
+                      <div className="rounded-xl overflow-hidden border border-[var(--border-primary)]">
+                        <LeafletMap
+                          center={mapCenter}
+                          spots={[{
+                            id: "preview",
+                            title: "Ваше место",
+                            address: address,
+                            pricePerHour: 0,
+                            geoLat: geoLat,
+                            geoLng: geoLng,
+                            covered: false,
+                            guarded: false,
+                            camera: false,
+                            evCharging: false,
+                            disabledAccessible: false,
+                            wideEntrance: false,
+                            photos: [],
+                          }]}
+                          loadSpots={false}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-[var(--text-muted)]">
+                        📍 Координаты: {geoLat.toFixed(6)}, {geoLng.toFixed(6)}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Скрытые поля для координат (для отправки формы) */}
+                  <input type="hidden" name="geoLat" value={geoLat?.toString() || ""} />
+                  <input type="hidden" name="geoLng" value={geoLng?.toString() || ""} />
+                  
+                  {/* Ручной ввод координат (опционально) */}
+                  <details className="mt-4">
+                    <summary className="cursor-pointer text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                      ⚙️ Указать координаты вручную
+                    </summary>
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <Input
+                        name="geoLatManual"
+                        label="Широта"
+                        type="number"
+                        step="any"
+                        placeholder="55.7558"
+                        value={geoLat?.toString() || ""}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (!isNaN(val)) {
+                            setGeoLat(val);
+                            setMapCenter([val, geoLng || 37.6176]);
+                          }
+                        }}
+                        error={fieldErrors.geoLat}
+                        helperText="От -90 до 90"
+                      />
+                      <Input
+                        name="geoLngManual"
+                        label="Долгота"
+                        type="number"
+                        step="any"
+                        placeholder="37.6176"
+                        value={geoLng?.toString() || ""}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (!isNaN(val)) {
+                            setGeoLng(val);
+                            setMapCenter([geoLat || 55.751244, val]);
+                          }
+                        }}
+                        error={fieldErrors.geoLng}
+                        helperText="От -180 до 180"
+                      />
+                    </div>
+                  </details>
                 </div>
               </CardContent>
             </MotionCard>
