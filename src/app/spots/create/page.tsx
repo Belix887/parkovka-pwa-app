@@ -94,19 +94,45 @@ export default function CreateSpotPage() {
   }
 
   const handleAddressSelect = (suggestion: GeocodeSuggestion) => {
-    setGeoLat(suggestion.lat);
-    setGeoLng(suggestion.lng);
-    setMapCenter([suggestion.lat, suggestion.lng]);
-    
-    // Обновляем скрытые поля формы
-    if (formRef.current) {
-      const latInput = formRef.current.querySelector('input[name="geoLat"]') as HTMLInputElement;
-      const lngInput = formRef.current.querySelector('input[name="geoLng"]') as HTMLInputElement;
-      if (latInput) latInput.value = suggestion.lat.toString();
-      if (lngInput) lngInput.value = suggestion.lng.toString();
+    try {
+      // Проверяем валидность координат
+      if (!suggestion || typeof suggestion.lat !== 'number' || typeof suggestion.lng !== 'number') {
+        console.error("Invalid suggestion:", suggestion);
+        showError("Ошибка", "Некорректные координаты адреса");
+        return;
+      }
+
+      if (isNaN(suggestion.lat) || isNaN(suggestion.lng)) {
+        console.error("NaN coordinates:", suggestion);
+        showError("Ошибка", "Координаты не определены");
+        return;
+      }
+
+      // Проверяем диапазон координат
+      if (suggestion.lat < -90 || suggestion.lat > 90 || suggestion.lng < -180 || suggestion.lng > 180) {
+        console.error("Out of range coordinates:", suggestion);
+        showError("Ошибка", "Координаты вне допустимого диапазона");
+        return;
+      }
+
+      // Обновляем состояние
+      setGeoLat(suggestion.lat);
+      setGeoLng(suggestion.lng);
+      setMapCenter([suggestion.lat, suggestion.lng]);
+      
+      // Обновляем скрытые поля формы
+      if (formRef.current) {
+        const latInput = formRef.current.querySelector('input[name="geoLat"]') as HTMLInputElement;
+        const lngInput = formRef.current.querySelector('input[name="geoLng"]') as HTMLInputElement;
+        if (latInput) latInput.value = suggestion.lat.toString();
+        if (lngInput) lngInput.value = suggestion.lng.toString();
+      }
+      
+      showInfo("Координаты обновлены", "Адрес найден на карте");
+    } catch (error) {
+      console.error("Error in handleAddressSelect:", error);
+      showError("Ошибка", "Не удалось обработать выбранный адрес");
     }
-    
-    showInfo("Координаты обновлены", "Адрес найден на карте");
   };
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -393,14 +419,17 @@ export default function CreateSpotPage() {
                   </div>
 
                   {/* Карта с выбранным местом */}
-                  {(geoLat !== null && geoLng !== null) && (
+                  {(geoLat !== null && geoLng !== null && 
+                    !isNaN(geoLat) && !isNaN(geoLng) &&
+                    geoLat >= -90 && geoLat <= 90 &&
+                    geoLng >= -180 && geoLng <= 180) && (
                     <div>
                       <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                         Расположение на карте
                       </label>
                       <div className="rounded-xl overflow-hidden border border-[var(--border-primary)]" style={{ height: '400px' }}>
                         <LeafletMap
-                          center={mapCenter}
+                          center={[geoLat, geoLng] as [number, number]}
                           zoom={15}
                           spots={[{
                             id: "preview",

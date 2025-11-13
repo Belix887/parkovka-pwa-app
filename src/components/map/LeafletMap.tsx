@@ -105,7 +105,20 @@ export default function LeafletMap({
   function MapCenterUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
     const map = useMap();
     useEffect(() => {
-      map.setView(center, zoom);
+      try {
+        // Проверяем валидность координат
+        if (Array.isArray(center) && center.length === 2 && 
+            typeof center[0] === 'number' && typeof center[1] === 'number' &&
+            !isNaN(center[0]) && !isNaN(center[1]) &&
+            center[0] >= -90 && center[0] <= 90 &&
+            center[1] >= -180 && center[1] <= 180) {
+          map.setView(center, zoom);
+        } else {
+          console.error("Invalid center coordinates:", center);
+        }
+      } catch (error) {
+        console.error("Error updating map center:", error);
+      }
     }, [center, zoom, map]);
     return null;
   }
@@ -133,7 +146,15 @@ export default function LeafletMap({
         />
         <MapCenterUpdater center={center as [number, number]} zoom={zoom} />
         
-        {mapSpots.map((spot) => (
+        {mapSpots.filter(spot => 
+          spot && 
+          typeof spot.geoLat === 'number' && 
+          typeof spot.geoLng === 'number' &&
+          !isNaN(spot.geoLat) && 
+          !isNaN(spot.geoLng) &&
+          spot.geoLat >= -90 && spot.geoLat <= 90 &&
+          spot.geoLng >= -180 && spot.geoLng <= 180
+        ).map((spot) => (
           <Marker 
             key={spot.id} 
             position={[spot.geoLat, spot.geoLng] as [number, number]} 
