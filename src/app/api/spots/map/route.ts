@@ -99,7 +99,7 @@ export async function GET() {
   try {
     try {
       const spots = await prisma.parkingSpot.findMany({
-        where: { status: "APPROVED" },
+        where: { status: { in: ["APPROVED", "AUTO_APPROVED"] } },
         orderBy: { createdAt: "desc" },
         include: { photos: { orderBy: { sortOrder: "asc" }, take: 1 } },
       } as any);

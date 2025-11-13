@@ -17,13 +17,30 @@ export async function authenticate(email: string, password: string) {
 }
 
 export async function getCurrentUser() {
-    const cookieStore = await cookies();
-    const cookie = cookieStore.get("session");
-    if (!cookie) return null;
-    const payload = await verifySession(cookie.value);
-    if (!payload?.sub) return null;
-    const user = await prisma.user.findUnique({ where: { id: String(payload.sub) } });
-    return user;
+	const cookieStore = await cookies();
+	const cookie = cookieStore.get("session");
+	if (!cookie) return null;
+	const payload = await verifySession(cookie.value);
+	if (!payload?.sub) return null;
+
+	const user = await prisma.user.findUnique({ where: { id: String(payload.sub) } });
+	if (!user) return null;
+
+	// обновляем роль/почту в payload при необходимости
+	return user;
+}
+
+export async function requireUser() {
+	const user = await getCurrentUser();
+	if (!user) throw new Error("UNAUTHORIZED");
+	return user;
+}
+
+export function restrictToRoles<T extends { role: string }>(user: T, roles: string[]) {
+	if (!roles.includes(user.role)) {
+		throw new Error("FORBIDDEN");
+	}
+	return user;
 }
 
 

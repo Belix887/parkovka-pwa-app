@@ -8,18 +8,34 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
+const SPOT_STATUS_VARIANTS: Record<string, { label: string; variant: "default" | "success" | "warning" | "error" | "info" }> = {
+  APPROVED: { label: "Одобрено", variant: "success" },
+  AUTO_APPROVED: { label: "Авто-одобрено", variant: "success" },
+  PENDING_REVIEW: { label: "На модерации", variant: "warning" },
+  PENDING_VERIFICATION: { label: "Ожидает проверки", variant: "warning" },
+  AUTO_REJECTED: { label: "Авто-отклонено", variant: "error" },
+  REJECTED: { label: "Отклонено", variant: "error" },
+  DRAFT: { label: "Черновик", variant: "default" },
+};
+
 export default async function ProfilePage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   // Load user-related data (works with real Prisma and the in-memory mock)
   const now = new Date();
-  const [mySpots, bookingsAsRenter, bookingsAsOwner] = await Promise.all([
+  const [mySpots, bookingsAsRenter, bookingsAsOwner, latestVerification] = await Promise.all([
     prisma.parkingSpot.findMany({ where: { ownerId: user.id } }),
     // bookings made by the user
     (prisma as any).booking.findMany({ where: { renterId: user.id }, include: { spot: true } }),
     // bookings for user's spots (to calculate earnings)
     (prisma as any).booking.findMany({ where: { spot: { ownerId: user.id } }, include: { spot: true } }),
+    user.role === "OWNER"
+      ? prisma.ownerVerification.findFirst({
+          where: { ownerId: user.id },
+          orderBy: { createdAt: "desc" } as any,
+        })
+      : Promise.resolve(null),
   ]);
 
   const activeBookingsCount = bookingsAsRenter.filter(
@@ -31,6 +47,57 @@ export default async function ProfilePage() {
     .reduce((sum: number, b: any) => sum + (b.ownerAmount ?? 0), 0);
 
   const formatRub = (amount: number) => `${(amount / 100).toLocaleString("ru-RU")} ₽`;
+
+  const verificationStatus = (() => {
+    if (user.role !== "OWNER") {
+      return {
+        label: "Арендатор",
+        variant: "info" as const,
+        description: "Верификация владельца доступна только для аккаунтов владельцев.",
+      };
+    }
+    if (!latestVerification) {
+      return {
+        label: "Не начата",
+        variant: "warning" as const,
+        description: "Чтобы сдавать парковочные места, пройдите проверку личности.",
+      };
+    }
+    switch (latestVerification.status) {
+      case "APPROVED":
+        return {
+          label: "Подтверждено",
+          variant: "success" as const,
+          description: "Ваш аккаунт подтвержден, вы можете принимать брони без ограничений.",
+        };
+      case "REJECTED":
+        return {
+          label: "Отклонено",
+          variant: "error" as const,
+          description: latestVerification.reviewerNotes || "Перепроверьте данные и отправьте заявку повторно.",
+        };
+      case "NEEDS_MORE_INFO":
+        return {
+          label: "Нужна информация",
+          variant: "warning" as const,
+          description: latestVerification.reviewerNotes || "Дополните заявку необходимыми документами.",
+        };
+      case "IN_REVIEW":
+        return {
+          label: "На проверке",
+          variant: "info" as const,
+          description: "Модераторы проверяют документы. Это может занять до 24 часов.",
+        };
+      default:
+        return {
+          label: "Отправлено",
+          variant: "info" as const,
+          description: latestVerification.submittedAt
+            ? `Отправлено ${new Date(latestVerification.submittedAt).toLocaleString("ru-RU")}`
+            : "Заявка отправлена и ожидает проверки.",
+        };
+    }
+  })();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--bg-primary)] via-[var(--bg-secondary)] to-[var(--bg-tertiary)]">
@@ -109,7 +176,12 @@ export default async function ProfilePage() {
                     <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
                       Статус
                     </label>
-                    <Badge variant="success">Верифицирован</Badge>
+                    <Badge variant={verificationStatus.variant}>
+                      {verificationStatus.label}
+                    </Badge>
+                    <p className="text-xs text-[var(--text-muted)] mt-2 leading-relaxed">
+                      {verificationStatus.description}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -121,6 +193,34 @@ export default async function ProfilePage() {
                 </Link>
               </div>
             </MotionCard>
+            {user.role === "OWNER" && (
+              <MotionCard className="mobile-card lg:col-span-3">
+                <CardHeader
+                  title="Верификация владельца"
+                  subtitle="Отправьте документы и управляйте статусом проверки"
+                  icon="✅"
+                />
+                <CardContent>
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-[var(--text-secondary)]">
+                        Для публикации и монетизации мест необходима проверка личности. Мы принимаем основные документы РФ.
+                      </p>
+                      {latestVerification?.reviewerNotes && (
+                        <p className="text-sm text-[var(--accent-warning)] mt-3">
+                          Комментарий модератора: {latestVerification.reviewerNotes}
+                        </p>
+                      )}
+                    </div>
+                    <Link href="/owner/verification">
+                      <Button variant="primary" size="sm" icon="🛂">
+                        Перейти к верификации
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </MotionCard>
+            )}
 
             {/* Мои парковочные места */}
             <MotionCard className="mobile-card">
@@ -140,9 +240,17 @@ export default async function ProfilePage() {
                         <h4 className="font-semibold text-[var(--text-primary)] text-sm md:text-base">
                           {s.title}
                         </h4>
-                        <Badge variant={s.status === "APPROVED" ? "success" : s.status === "PENDING_REVIEW" ? "warning" : "default"} size="sm">
-                          {s.status === "APPROVED" ? "Активно" : s.status === "PENDING_REVIEW" ? "На модерации" : "Черновик"}
-                        </Badge>
+                        {(() => {
+                          const config = SPOT_STATUS_VARIANTS[s.status] ?? {
+                            label: s.status,
+                            variant: "default" as const,
+                          };
+                          return (
+                            <Badge variant={config.variant} size="sm">
+                              {config.label}
+                            </Badge>
+                          );
+                        })()}
                       </div>
                       <p className="text-xs md:text-sm text-[var(--text-secondary)] mb-2">
                         {s.address}

@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
-import { sendEmail } from "@/lib/notifications";
+import { requireUser, restrictToRoles } from "@/lib/auth";
+import { sendBookingApprovedNotification } from "@/lib/notifications";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser();
+    const user = await requireUser().catch(() => null);
     if (!user) return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
+    try {
+      restrictToRoles(user, ["OWNER", "ADMIN"]);
+    } catch {
+      return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
+    }
     const { id: bookingId } = await params;
     
     // Находим бронирование
@@ -32,17 +37,20 @@ export async function POST(
       data: { status: "APPROVED" }
     });
 
-    // Уведомление арендатора по email (если известно)
+    // Уведомление арендатора по email
     try {
       const renter = await prisma.user.findUnique({ where: { id: booking.renterId } });
       if (renter?.email) {
-        await sendEmail(
-          renter.email,
-          "Бронирование подтверждено",
-          `<p>Ваша бронь на "${booking.spot?.title ?? 'Парковочное место'}" подтверждена.</p>`
-        );
+        sendBookingApprovedNotification(renter.email, {
+          spotTitle: booking.spot?.title ?? "Парковочное место",
+          spotAddress: booking.spot?.address ?? "",
+          startAt: new Date(booking.startAt),
+          endAt: new Date(booking.endAt),
+        }).catch((err) => console.error("Failed to send notification:", err));
       }
-    } catch {}
+    } catch (err) {
+      console.error("Notification error:", err);
+    }
 
     return NextResponse.json({ 
       success: true, 

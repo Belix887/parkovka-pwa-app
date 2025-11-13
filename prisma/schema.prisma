@@ -21,6 +21,13 @@ model User {
   bookings      Booking[]     @relation("UserBookings")
   notifications Notification[]
   pushTokens    PushToken[]
+  ownedBlacklist  BlacklistEntry[] @relation("OwnerBlacklist")
+  renterBlacklist BlacklistEntry[] @relation("RenterBlacklist")
+  verificationRequests OwnerVerification[] @relation("OwnerVerificationOwner")
+  reviewedVerifications OwnerVerification[] @relation("OwnerVerificationReviewer")
+  depositTransactionsCreated DepositTransaction[] @relation("UserDepositTransactions")
+  verificationDocumentsReviewed VerificationDocument[] @relation("VerificationDocumentReviewer")
+  spotModerationDecisions SpotModerationLog[] @relation("SpotModerationReviewer")
 }
 
 enum UserRole {
@@ -58,10 +65,18 @@ model ParkingSpot {
 
   instantApproval    Boolean       @default(false)
 
+  // Политика отмены и ценообразование
+  cancellationPolicy String        @default("MODERATE") // FLEXIBLE, MODERATE, STRICT
+  cancellationDeadlineHours Int    @default(24) // За сколько часов можно отменить
+  depositRequired    Boolean       @default(false)
+  depositAmount      Int?          // Фиксированная сумма или процент от цены
+  depositPercent     Int?          // Процент от стоимости (если depositAmount не указан)
+
   photos             SpotPhoto[]
   availability       AvailabilityRule[]
   blackouts          BookingBlock[]
   bookings           Booking[]
+  moderationLogs     SpotModerationLog[]
 
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
@@ -74,7 +89,10 @@ model ParkingSpot {
 
 enum SpotStatus {
   DRAFT
+  PENDING_VERIFICATION
   PENDING_REVIEW
+  AUTO_APPROVED
+  AUTO_REJECTED
   APPROVED
   REJECTED
 }
@@ -128,6 +146,23 @@ model Booking {
   commissionAmount Int           @default(0)
   ownerAmount      Int           @default(0)
   paymentId        String?
+  depositAmount    Int           @default(0)
+  depositStatus    DepositStatus @default(NOT_REQUIRED)
+  penaltyAmount    Int           @default(0)
+  penaltyReason    String?
+  disputeOpenedAt  DateTime?
+  disputeResolvedAt DateTime?
+  disputeDeadline  DateTime?
+  disputeEvidence  Json?
+
+  // Геолокация и маршрут при бронировании
+  renterLat        Float?
+  renterLng        Float?
+  routeDistance    Float?         // Расстояние до парковки (метры)
+  routeDuration    Int?           // Время в пути (секунды)
+  routePolyline    String?        // Полилиния маршрута (JSON)
+
+  depositTransactions DepositTransaction[]
 
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
@@ -143,6 +178,40 @@ enum BookingStatus {
   DECLINED
   CANCELLED
   PAID
+}
+
+enum DepositStatus {
+  NOT_REQUIRED
+  PENDING
+  HELD
+  PARTIALLY_RELEASED
+  RELEASED
+  FORFEITED
+  FAILED
+}
+
+enum DepositTransactionType {
+  HOLD
+  RELEASE
+  PARTIAL_RELEASE
+  FORFEIT
+  REFUND
+  ADJUSTMENT
+}
+
+model DepositTransaction {
+  id          String                  @id @default(cuid())
+  bookingId   String
+  booking     Booking                 @relation(fields: [bookingId], references: [id])
+  type        DepositTransactionType
+  amount      Int
+  description String?
+  createdAt   DateTime                @default(now())
+  createdById String?
+  createdBy   User?                   @relation("UserDepositTransactions", fields: [createdById], references: [id])
+
+  @@index([bookingId])
+  @@index([type])
 }
 
 model BookingBlock {
@@ -179,6 +248,118 @@ model PushToken {
   provider  String
   token     String
   createdAt DateTime @default(now())
+}
+
+model BlacklistEntry {
+  id        String   @id @default(cuid())
+  ownerId   String
+  renterId  String
+  reason    String?
+  createdAt DateTime @default(now())
+
+  owner     User     @relation("OwnerBlacklist", fields: [ownerId], references: [id])
+  renter    User     @relation("RenterBlacklist", fields: [renterId], references: [id])
+
+  @@index([ownerId])
+  @@index([renterId])
+}
+
+enum VerificationStatus {
+  DRAFT
+  PENDING
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  NEEDS_MORE_INFO
+}
+
+enum VerificationDocumentType {
+  IDENTITY_FRONT
+  IDENTITY_BACK
+  SELFIE
+  PROOF_OF_ADDRESS
+  OTHER
+}
+
+enum VerificationDocumentStatus {
+  UPLOADED
+  ACCEPTED
+  REJECTED
+}
+
+model OwnerVerification {
+  id            String             @id @default(cuid())
+  ownerId       String
+  owner         User               @relation("OwnerVerificationOwner", fields: [ownerId], references: [id])
+  status        VerificationStatus @default(DRAFT)
+
+  fullName      String
+  documentType  VerificationDocumentType
+  documentNumber String
+  issuedBy      String?
+  issuedAt      DateTime?
+
+  submittedAt   DateTime?          @default(now())
+  reviewedAt    DateTime?
+  reviewerId    String?
+  reviewer      User?              @relation("OwnerVerificationReviewer", fields: [reviewerId], references: [id])
+  reviewerNotes String?
+  provider      String?
+  autoCheckScore Float?
+
+  documents     VerificationDocument[]
+
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+model VerificationDocument {
+  id              String                     @id @default(cuid())
+  verificationId  String
+  verification    OwnerVerification          @relation(fields: [verificationId], references: [id])
+  type            VerificationDocumentType   @default(IDENTITY_FRONT)
+  status          VerificationDocumentStatus @default(UPLOADED)
+  url             String
+  metadata        Json?
+  reviewerId      String?
+  reviewer        User?                      @relation("VerificationDocumentReviewer", fields: [reviewerId], references: [id])
+  reviewedAt      DateTime?
+
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+
+  @@index([verificationId])
+  @@index([type])
+}
+
+enum SpotModerationDecision {
+  AUTO_APPROVED
+  AUTO_REJECTED
+  AUTO_FLAGGED
+  MANUAL_APPROVED
+  MANUAL_REJECTED
+}
+
+model SpotModerationLog {
+  id            String                @id @default(cuid())
+  spotId        String
+  spot          ParkingSpot           @relation(fields: [spotId], references: [id], onDelete: Cascade)
+  decision      SpotModerationDecision
+  statusBefore  SpotStatus
+  statusAfter   SpotStatus
+  notes         String?
+  auto          Boolean               @default(false)
+  reviewerId    String?
+  reviewer      User?                 @relation("SpotModerationReviewer", fields: [reviewerId], references: [id])
+  meta          Json?
+  createdAt     DateTime              @default(now())
+
+  @@index([spotId])
+  @@index([decision])
+  @@index([statusAfter])
 }
 
 

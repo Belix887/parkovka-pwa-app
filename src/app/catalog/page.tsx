@@ -70,9 +70,14 @@ export default function CatalogPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "APPROVED":
+      case "AUTO_APPROVED":
         return <Badge variant="success" size="sm">Доступно</Badge>;
       case "PENDING_REVIEW":
+      case "PENDING_VERIFICATION":
         return <Badge variant="warning" size="sm">На модерации</Badge>;
+      case "AUTO_REJECTED":
+      case "REJECTED":
+        return <Badge variant="error" size="sm">Недоступно</Badge>;
       default:
         return <Badge variant="default" size="sm">Недоступно</Badge>;
     }

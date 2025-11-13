@@ -6,8 +6,10 @@ async function main() {
   // Seed passwords
   const ownerPassword = "owner123";
   const renterPassword = "renter123";
+  const adminPassword = "admin123";
   const ownerHash = await hash(ownerPassword, 10);
   const renterHash = await hash(renterPassword, 10);
+  const adminHash = await hash(adminPassword, 10);
 
   // Create owner and renter
   const owner = await prisma.user.upsert({
@@ -19,6 +21,11 @@ async function main() {
     where: { email: "renter@example.com" },
     update: {},
     create: { email: "renter@example.com", passwordHash: renterHash, role: "RENTER" },
+  });
+  const admin = await prisma.user.upsert({
+    where: { email: "admin@example.com" },
+    update: {},
+    create: { email: "admin@example.com", passwordHash: adminHash, role: "ADMIN" },
   });
 
   await prisma.parkingSpot.create({
@@ -46,10 +53,11 @@ async function main() {
     },
   });
 
-  console.log({ owner: owner.email, renter: renter.email });
+  console.log({ owner: owner.email, renter: renter.email, admin: admin.email });
   console.log("Seeded users:");
   console.log("  owner@example.com /", ownerPassword);
   console.log("  renter@example.com /", renterPassword);
+  console.log("  admin@example.com /", adminPassword);
 }
 
 main().finally(async () => {

@@ -12,10 +12,18 @@ export async function createSession(user: { id: string; role: string; email: str
 	return token;
 }
 
-export async function verifySession(token: string) {
+export interface SessionPayload {
+	sub: string;
+	role: string;
+	email: string;
+	iat: number;
+	exp: number;
+}
+
+export async function verifySession(token: string): Promise<SessionPayload | null> {
 	try {
 		const { payload } = await jwtVerify(token, secret);
-		return payload as any;
+		return payload as SessionPayload;
 	} catch {
 		return null;
 	}

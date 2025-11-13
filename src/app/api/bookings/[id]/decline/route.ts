@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser, restrictToRoles } from "@/lib/auth";
 import { sendEmail } from "@/lib/notifications";
 
 export async function POST(
@@ -8,8 +8,13 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser();
+    const user = await requireUser().catch(() => null);
     if (!user) return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
+    try {
+      restrictToRoles(user, ["OWNER", "ADMIN"]);
+    } catch {
+      return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
+    }
     const { id: bookingId } = await params;
     
     // Находим бронирование

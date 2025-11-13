@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./Button";
 import { Logo } from "./Logo";
 import Link from "next/link";
@@ -16,13 +16,42 @@ interface MobileNavigationProps {
 
 export function MobileNavigation({ user }: MobileNavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(user ?? null);
   const router = useRouter();
+
+  useEffect(() => {
+    let ignore = false;
+    async function loadUser() {
+      try {
+        const res = await fetch("/api/me", { cache: "no-store" });
+        if (!res.ok) {
+          if (!ignore) setCurrentUser(null);
+          return;
+        }
+        const data = await res.json();
+        if (!ignore) setCurrentUser(data || null);
+      } catch {
+        if (!ignore) setCurrentUser(null);
+      }
+    }
+
+    if (user === undefined) {
+      loadUser();
+    } else {
+      setCurrentUser(user ?? null);
+    }
+
+    return () => {
+      ignore = true;
+    };
+  }, [user]);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
+      setCurrentUser(null);
       router.push("/");
       router.refresh();
     } catch (error) {
@@ -40,7 +69,7 @@ export function MobileNavigation({ user }: MobileNavigationProps) {
           </Link>
           
           <div className="flex items-center gap-2 min-w-0">
-            {user ? (
+            {currentUser ? (
               <Link href="/profile" className="flex-shrink-0">
                 <Button variant="ghost" size="sm" icon="👤" className="px-2 py-1 text-xs">
                   <span className="hidden xs:inline">Профиль</span>
@@ -112,7 +141,7 @@ export function MobileNavigation({ user }: MobileNavigationProps) {
                   📱 Установить приложение
                 </Link>
 
-                {user && (
+                {currentUser && (
                   <>
                     <div className="border-t border-[var(--border-primary)] my-2" />
                     
@@ -132,14 +161,50 @@ export function MobileNavigation({ user }: MobileNavigationProps) {
                       ➕ Добавить место
                     </Link>
                     
-                    {user.role === "OWNER" && (
-                      <Link 
-                        href="/owner/requests" 
-                        className="block w-full text-left px-3 py-3 rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        📋 Заявки
-                      </Link>
+                    {currentUser.role === "OWNER" && (
+                      <>
+                        <Link 
+                          href="/owner/dashboard" 
+                          className="block w-full text-left px-3 py-3 rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          📊 Дашборд
+                        </Link>
+                        <Link 
+                          href="/owner/verification" 
+                          className="block w-full text-left px-3 py-3 rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          ✅ Верификация
+                        </Link>
+                        <Link 
+                          href="/owner/requests" 
+                          className="block w-full text-left px-3 py-3 rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          📋 Заявки
+                        </Link>
+                      </>
+                    )}
+
+                    {currentUser.role === "ADMIN" && (
+                      <>
+                        <div className="border-t border-[var(--border-primary)] my-2" />
+                        <Link
+                          href="/admin/owner-verifications"
+                          className="block w-full text-left px-3 py-3 rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          🪪 Верификация владельцев
+                        </Link>
+                        <Link
+                          href="/admin/spots"
+                          className="block w-full text-left px-3 py-3 rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          🧭 Модерация мест
+                        </Link>
+                      </>
                     )}
                     
                     <div className="border-t border-[var(--border-primary)] my-2" />

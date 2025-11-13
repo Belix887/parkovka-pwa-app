@@ -70,20 +70,68 @@ export default async function RootLayout({
                     </span>
                     <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--accent-primary)] group-hover:w-full transition-all duration-300"></div>
                   </Link>
-                  <Link 
-                    href="/requests" 
-                    className="group text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-all duration-300 font-medium relative"
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="text-lg group-hover:animate-bounce">📋</span>
-                      Заявки
-                    </span>
-                    <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--accent-primary)] group-hover:w-full transition-all duration-300"></div>
-                  </Link>
+                  {user?.role === "OWNER" && (
+                    <>
+                      <Link 
+                        href="/owner/dashboard" 
+                        className="group text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-all duration-300 font-medium relative"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-lg group-hover:animate-bounce">📊</span>
+                          Дашборд
+                        </span>
+                        <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--accent-primary)] group-hover:w-full transition-all.duration-300"></div>
+                      </Link>
+                      <Link 
+                        href="/owner/verification" 
+                        className="group text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-all.duration-300 font-medium relative"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-lg group-hover:animate-bounce">✅</span>
+                          Верификация
+                        </span>
+                        <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--accent-primary)] group-hover:w-full transition-all.duration-300"></div>
+                      </Link>
+                      <Link 
+                        href="/owner/requests" 
+                        className="group text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-all.duration-300 font-medium relative"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-lg group-hover:animate-bounce">📋</span>
+                          Заявки
+                        </span>
+                        <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--accent-primary)] group-hover:w-full transition-all.duration-300"></div>
+                      </Link>
+                    </>
+                  )}
+                  {user?.role === "ADMIN" && (
+                    <>
+                      <Link 
+                        href="/admin/owner-verifications" 
+                        className="group text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-all duration-300 font-medium relative"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-lg group-hover:animate-bounce">🪪</span>
+                          KYC владельцев
+                        </span>
+                        <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--accent-primary)] group-hover:w-full transition-all duration-300"></div>
+                      </Link>
+                      <Link 
+                        href="/admin/spots" 
+                        className="group text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-all duration-300 font-medium relative"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-lg group-hover:animate-bounce">🧭</span>
+                          Модерация мест
+                        </span>
+                        <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--accent-primary)] group-hover:w-full transition-all duration-300"></div>
+                      </Link>
+                    </>
+                  )}
                   {!user && (
                     <Link 
                       href="/profile" 
-                      className="group text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-all duration-300 font-medium relative"
+                      className="group text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-all.duration-300.font-medium relative"
                     >
                       <span className="flex items-center gap-2">
                         <span className="text-lg group-hover:animate-bounce">👤</span>
