@@ -9,21 +9,23 @@ const parkingIcon = L.divIcon({
   className: 'custom-parking-icon',
   html: `
     <div style="
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      background: white;
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      border: 4px solid white;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 0 2px rgba(37, 99, 235, 0.3);
+      border: 3px solid #2563eb;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 0 2px rgba(37, 99, 235, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
-      color: white;
+      font-size: 22px;
+      color: #2563eb;
       font-weight: 900;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       letter-spacing: -0.5px;
+      line-height: 1;
+      padding: 0;
+      margin: 0;
     ">P</div>
   `,
   iconSize: [40, 40],
