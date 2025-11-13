@@ -63,16 +63,10 @@ export default function LeafletMap({
   // Обновляем маркеры при изменении пропса spots
   useEffect(() => {
     if (!loadSpots) {
-      setMapSpots(spots);
+      // Принудительно обновляем маркеры при изменении spots
+      setMapSpots([...spots]);
     }
   }, [spots, loadSpots]);
-
-  // Логируем для отладки
-  useEffect(() => {
-    if (mapSpots.length > 0) {
-      console.log("Map spots:", mapSpots);
-    }
-  }, [mapSpots]);
 
   useEffect(() => {
     if (loadSpots) {
@@ -161,9 +155,7 @@ export default function LeafletMap({
           !isNaN(spot.geoLng) &&
           spot.geoLat >= -90 && spot.geoLat <= 90 &&
           spot.geoLng >= -180 && spot.geoLng <= 180
-        ).map((spot) => {
-          console.log("Rendering marker for spot:", spot.id, "at", spot.geoLat, spot.geoLng);
-          return (
+        ).map((spot) => (
           <Marker 
             key={spot.id} 
             position={[spot.geoLat, spot.geoLng] as [number, number]} 
@@ -222,8 +214,7 @@ export default function LeafletMap({
               </div>
             </Popup>
           </Marker>
-          );
-        })}
+        ))}
       </MapContainer>
     </div>
   );
