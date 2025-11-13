@@ -72,6 +72,73 @@ export async function calculateRouteOSRM(
 }
 
 /**
+ * Получить маршрут через GraphHopper API
+ * Требует API ключ, хорошая альтернатива для маршрутизации
+ */
+export async function calculateRouteGraphHopper(
+  from: RoutePoint,
+  to: RoutePoint,
+  options: RoutingOptions = {}
+): Promise<Route | null> {
+  const apiKey = process.env.NEXT_PUBLIC_GRAPHHOPPER_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+
+  const { mode = "driving" } = options;
+  const vehicle = mode === "walking" ? "foot" : mode === "cycling" ? "bike" : "car";
+
+  try {
+    const url = `https://graphhopper.com/api/1/route?point=${from.lat},${from.lng}&point=${to.lat},${to.lng}&vehicle=${vehicle}&key=${apiKey}&instructions=true&calc_points=true&points_encoded=false`;
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("GraphHopper API error");
+    }
+
+    const data = await response.json();
+    if (!data.paths || data.paths.length === 0) {
+      return null;
+    }
+
+    const path = data.paths[0];
+    const steps = path.instructions?.map((instruction: any) => ({
+      distance: instruction.distance || 0,
+      duration: instruction.time ? instruction.time / 1000 : 0, // GraphHopper возвращает в миллисекундах
+      instruction: instruction.text || "",
+      geometry: undefined,
+    })) || [];
+
+    // Преобразуем координаты в полилинию
+    // GraphHopper возвращает points в формате GeoJSON LineString
+    let coordinates: [number, number][] = [];
+    if (path.points?.coordinates) {
+      // Если points_encoded=false, получаем массив координат [lng, lat]
+      coordinates = path.points.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
+    } else if (path.points?.points) {
+      // Если points_encoded=true, нужно декодировать
+      // Для простоты используем decodePolyline, но обычно GraphHopper возвращает points_encoded=false
+      coordinates = decodePolyline(path.points.points).map(p => [p.lat, p.lng]);
+    }
+    
+    const geometry = JSON.stringify({
+      type: "LineString",
+      coordinates,
+    });
+
+    return {
+      distance: path.distance || 0,
+      duration: path.time ? Math.round(path.time / 1000) : 0, // GraphHopper возвращает в миллисекундах
+      geometry,
+      steps,
+    };
+  } catch (error) {
+    console.error("GraphHopper routing error:", error);
+    return null;
+  }
+}
+
+/**
  * Получить маршрут через Yandex Maps API
  * Требует API ключ, но более точный для России
  */
@@ -82,7 +149,7 @@ export async function calculateRouteYandex(
 ): Promise<Route | null> {
   const apiKey = process.env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY;
   if (!apiKey) {
-    return null; // Fallback на OSRM
+    return null; // Fallback на другие провайдеры
   }
 
   const { mode = "driving" } = options;
@@ -125,20 +192,26 @@ export async function calculateRouteYandex(
 
 /**
  * Универсальная функция для расчета маршрута
- * Пробует Yandex, затем fallback на OSRM
+ * Пробует провайдеры в порядке приоритета: Yandex -> GraphHopper -> OSRM
  */
 export async function calculateRoute(
   from: RoutePoint,
   to: RoutePoint,
   options: RoutingOptions = {}
 ): Promise<Route | null> {
-  // Сначала пробуем Yandex (если есть ключ)
+  // 1. Сначала пробуем Yandex (если есть ключ) - лучший для России
   const yandexRoute = await calculateRouteYandex(from, to, options);
   if (yandexRoute) {
     return yandexRoute;
   }
 
-  // Fallback на OSRM
+  // 2. Пробуем GraphHopper (если есть ключ)
+  const graphHopperRoute = await calculateRouteGraphHopper(from, to, options);
+  if (graphHopperRoute) {
+    return graphHopperRoute;
+  }
+
+  // 3. Fallback на OSRM (бесплатный, не требует ключа)
   return calculateRouteOSRM(from, to, options);
 }
 
