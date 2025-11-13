@@ -99,12 +99,37 @@ export async function GET() {
   try {
     try {
       const spots = await prisma.parkingSpot.findMany({
-        where: { status: { in: ["APPROVED", "AUTO_APPROVED"] } },
+        where: { 
+          status: { in: ["APPROVED", "AUTO_APPROVED"] },
+          geoLat: { not: null },
+          geoLng: { not: null },
+        },
         orderBy: { createdAt: "desc" },
         include: { photos: { orderBy: { sortOrder: "asc" }, take: 1 } },
       } as any);
-      if (spots && spots.length) return NextResponse.json({ spots });
+      
+      if (spots && spots.length > 0) {
+        // Преобразуем данные из базы в формат для карты
+        const formattedSpots = spots.map((spot: any) => ({
+          id: spot.id,
+          title: spot.title,
+          address: spot.address,
+          pricePerHour: spot.pricePerHour,
+          geoLat: spot.geoLat,
+          geoLng: spot.geoLng,
+          covered: spot.covered,
+          guarded: spot.guarded,
+          camera: spot.camera,
+          evCharging: spot.evCharging,
+          disabledAccessible: spot.disabledAccessible,
+          wideEntrance: spot.wideEntrance,
+          photos: (spot.photos || []).map((photo: any) => ({ url: photo.url })),
+        }));
+        
+        return NextResponse.json({ spots: formattedSpots });
+      }
     } catch (_e) {
+      console.error("Error loading spots from database:", _e);
       // ignore and fall back
     }
     return NextResponse.json({ spots: mockSpots });

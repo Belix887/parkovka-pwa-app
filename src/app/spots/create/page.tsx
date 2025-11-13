@@ -96,10 +96,14 @@ export default function CreateSpotPage() {
       errors.description = "Описание должно содержать минимум 30 символов";
     }
     const price = Number(body.pricePerHour);
-    if (!price || price < 100 || price > 500000) {
-      errors.pricePerHour = "Цена должна быть от 1 ₽ (100 коп.) до 5 000 ₽ (500 000 коп.)";
-    } else if (price % 50 !== 0) {
-      errors.pricePerHour = "Цена должна быть кратна 50 копейкам";
+    if (!price || price < 1 || price > 5000) {
+      errors.pricePerHour = "Цена должна быть от 1 ₽ до 5 000 ₽";
+    } else {
+      // Проверяем кратность 50 копейкам (0.5 рубля)
+      const priceInKopecks = Math.round(price * 100);
+      if (priceInKopecks % 50 !== 0) {
+        errors.pricePerHour = "Цена должна быть кратна 50 копейкам (например: 100, 100.5, 150)";
+      }
     }
     const sizeL = Number(body.sizeL);
     if (!sizeL || sizeL < 1 || sizeL > 20) {
@@ -151,7 +155,7 @@ export default function CreateSpotPage() {
     const payload = {
       title: String(body.title).trim(),
       description: String(body.description).trim(),
-      pricePerHour: Math.round(price),
+      pricePerHour: Math.round(price * 100), // Конвертируем рубли в копейки для базы данных
       sizeL: Number(sizeL),
       sizeW: Number(sizeW),
       sizeH: Number(sizeH),
@@ -274,12 +278,13 @@ export default function CreateSpotPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
                       name="pricePerHour"
-                      label="Цена за час (копейки)"
+                      label="Цена за час (рубли)"
                       type="number"
-                      placeholder="10000"
+                      step="0.5"
+                      placeholder="100"
                       required
                       error={fieldErrors.pricePerHour}
-                      helperText="Например: 10000 = 100 ₽"
+                      helperText="Например: 100 = 100 ₽/час"
                     />
                     <div>
                       <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
