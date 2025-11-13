@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { MotionCard, CardHeader, CardContent, CardFooter } from "@/components/ui/MotionCard";
 import { Button } from "@/components/ui/Button";
