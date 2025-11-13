@@ -361,13 +361,14 @@ export default function CreateSpotPage() {
                       <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                         Расположение на карте
                       </label>
-                      <div className="rounded-xl overflow-hidden border border-[var(--border-primary)]">
+                      <div className="rounded-xl overflow-hidden border border-[var(--border-primary)]" style={{ height: '400px' }}>
                         <LeafletMap
                           center={mapCenter}
+                          zoom={15}
                           spots={[{
                             id: "preview",
                             title: "Ваше место",
-                            address: address,
+                            address: address || "Адрес будет указан",
                             pricePerHour: 0,
                             geoLat: geoLat,
                             geoLng: geoLng,

@@ -44,13 +44,28 @@ interface ParkingSpot {
   photos: { url: string }[];
 }
 
+interface LeafletMapProps {
+  center?: [number, number];
+  spots?: ParkingSpot[];
+  loadSpots?: boolean;
+  zoom?: number;
+}
+
 export default function LeafletMap({ 
   center = [55.751244, 37.618423], 
   spots = [] as ParkingSpot[],
-  loadSpots = false 
-}) {
+  loadSpots = false,
+  zoom = 12
+}: LeafletMapProps) {
   const [mapSpots, setMapSpots] = useState<ParkingSpot[]>(spots);
   const [loading, setLoading] = useState(false);
+
+  // Обновляем маркеры при изменении пропса spots
+  useEffect(() => {
+    if (!loadSpots) {
+      setMapSpots(spots);
+    }
+  }, [spots, loadSpots]);
 
   useEffect(() => {
     if (loadSpots) {
@@ -86,6 +101,15 @@ export default function LeafletMap({
     return features;
   };
 
+  // Компонент для обновления центра карты
+  function MapCenterUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
+    const map = useMap();
+    useEffect(() => {
+      map.setView(center, zoom);
+    }, [center, zoom, map]);
+    return null;
+  }
+
   return (
     <div className="relative">
       {loading && (
@@ -98,14 +122,16 @@ export default function LeafletMap({
       
       <MapContainer 
         center={center as [number, number]} 
-        zoom={12} 
+        zoom={zoom} 
         style={{ height: 400, width: "100%", borderRadius: 12 }}
         className="z-0"
+        key={`${center[0]}-${center[1]}-${zoom}`}
       >
         <TileLayer
           attribution=""
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <MapCenterUpdater center={center as [number, number]} zoom={zoom} />
         
         {mapSpots.map((spot) => (
           <Marker 
