@@ -8,9 +8,14 @@ import { Badge } from "@/components/ui/Badge";
 import { MobileNavigation } from "@/components/ui/MobileNavigation";
 import { useRouter } from "next/navigation";
 
+interface FieldErrors {
+  [key: string]: string;
+}
+
 export default function CreateSpotPage() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const { showSuccess, showError, showInfo } = useToast();
   const router = useRouter();
 
@@ -43,15 +48,80 @@ export default function CreateSpotPage() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const body = Object.fromEntries(form.entries());
+    
+    // Очищаем предыдущие ошибки
+    setFieldErrors({});
+    
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const body = Object.fromEntries(formData.entries());
+    
+    // Базовая валидация на клиенте
+    const errors: FieldErrors = {};
+    
+    if (!body.title || String(body.title).trim().length < 3) {
+      errors.title = "Название должно содержать минимум 3 символа";
+    }
+    if (!body.description || String(body.description).trim().length < 30) {
+      errors.description = "Описание должно содержать минимум 30 символов";
+    }
+    const price = Number(body.pricePerHour);
+    if (!price || price < 100 || price > 500000) {
+      errors.pricePerHour = "Цена должна быть от 1 ₽ (100 коп.) до 5 000 ₽ (500 000 коп.)";
+    } else if (price % 50 !== 0) {
+      errors.pricePerHour = "Цена должна быть кратна 50 копейкам";
+    }
+    const sizeL = Number(body.sizeL);
+    if (!sizeL || sizeL < 1 || sizeL > 20) {
+      errors.sizeL = "Длина должна быть от 1 до 20 метров";
+    }
+    const sizeW = Number(body.sizeW);
+    if (!sizeW || sizeW < 1 || sizeW > 20) {
+      errors.sizeW = "Ширина должна быть от 1 до 20 метров";
+    }
+    const sizeH = Number(body.sizeH);
+    if (!sizeH || sizeH < 1 || sizeH > 20) {
+      errors.sizeH = "Высота должна быть от 1 до 20 метров";
+    }
+    if (!body.address || String(body.address).trim().length < 5) {
+      errors.address = "Адрес должен содержать минимум 5 символов";
+    }
+    const geoLat = Number(body.geoLat);
+    if (!geoLat || geoLat < -90 || geoLat > 90 || Math.abs(geoLat) < 0.000001) {
+      errors.geoLat = "Укажите корректную широту (от -90 до 90)";
+    }
+    const geoLng = Number(body.geoLng);
+    if (!geoLng || geoLng < -180 || geoLng > 180 || Math.abs(geoLng) < 0.000001) {
+      errors.geoLng = "Укажите корректную долготу (от -180 до 180)";
+    }
+    if (photos.length === 0) {
+      errors.photos = "Добавьте хотя бы одно фото";
+    }
+    if (!body.rules || String(body.rules).trim().length < 10) {
+      errors.rules = "Правила должны содержать минимум 10 символов";
+    }
+    
+    // Если есть ошибки валидации, показываем их и останавливаем отправку
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      // Прокручиваем к первой ошибке
+      const firstErrorField = Object.keys(errors)[0];
+      const firstErrorElement = form.querySelector(`[name="${firstErrorField}"]`) as HTMLElement;
+      if (firstErrorElement) {
+        firstErrorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        firstErrorElement.focus();
+      }
+      showError("Ошибка валидации", "Проверьте заполнение полей");
+      return;
+    }
+    
     const payload = {
-      title: String(body.title),
-      description: String(body.description),
-      pricePerHour: Number(body.pricePerHour),
-      sizeL: Number(body.sizeL),
-      sizeW: Number(body.sizeW),
-      sizeH: Number(body.sizeH),
+      title: String(body.title).trim(),
+      description: String(body.description).trim(),
+      pricePerHour: Math.round(price),
+      sizeL: Number(sizeL),
+      sizeW: Number(sizeW),
+      sizeH: Number(sizeH),
       covered: Boolean(body.covered),
       guarded: Boolean(body.guarded),
       camera: Boolean(body.camera),
@@ -59,24 +129,54 @@ export default function CreateSpotPage() {
       disabledAccessible: Boolean(body.disabledAccessible),
       wideEntrance: Boolean(body.wideEntrance),
       accessType: String(body.accessType),
-      rules: String(body.rules),
-      address: String(body.address),
-      geoLat: Number(body.geoLat),
-      geoLng: Number(body.geoLng),
+      rules: String(body.rules).trim(),
+      address: String(body.address).trim(),
+      geoLat: Number(geoLat),
+      geoLng: Number(geoLng),
       photos,
     };
     
     setLoading(true);
     try {
-      const r = await fetch("/api/spots", { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "application/json" } });
+      const r = await fetch("/api/spots", { 
+        method: "POST", 
+        body: JSON.stringify(payload), 
+        headers: { "Content-Type": "application/json" } 
+      });
+      
       if (r.ok) {
         showSuccess("Место создано", "Ваше место отправлено на модерацию");
-        (e.currentTarget as HTMLFormElement).reset();
+        form.reset();
         setPhotos([]);
+        setFieldErrors({});
         router.push("/profile");
       } else {
         const errorData = await r.json();
-        showError("Ошибка создания", errorData.error || "Не удалось создать место");
+        
+        // Обрабатываем детальные ошибки валидации от сервера
+        if (errorData.details && Array.isArray(errorData.details)) {
+          const serverErrors: FieldErrors = {};
+          errorData.details.forEach((detail: { path: string; message: string }) => {
+            serverErrors[detail.path] = detail.message;
+          });
+          setFieldErrors(serverErrors);
+          
+          // Прокручиваем к первой ошибке
+          const firstErrorPath = errorData.details[0]?.path;
+          if (firstErrorPath) {
+            const firstErrorElement = form.querySelector(`[name="${firstErrorPath}"]`) as HTMLElement;
+            if (firstErrorElement) {
+              firstErrorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+              firstErrorElement.focus();
+            }
+          }
+          
+          // Показываем все ошибки
+          const errorMessages = errorData.details.map((d: { message: string }) => d.message).join(", ");
+          showError("Ошибка валидации", errorMessages);
+        } else {
+          showError("Ошибка создания", errorData.error || "Не удалось создать место");
+        }
       }
     } catch (err) {
       showError("Ошибка сети", "Проверьте подключение к интернету");
@@ -117,6 +217,7 @@ export default function CreateSpotPage() {
                     label="Название места"
                     placeholder="Например: Удобная парковка в центре"
                     required
+                    error={fieldErrors.title}
                   />
                   
                   <div>
@@ -126,10 +227,15 @@ export default function CreateSpotPage() {
                     <textarea 
                       name="description" 
                       placeholder="Опишите особенности вашего парковочного места..."
-                      className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form"
+                      className={`w-full px-4 py-3 bg-[var(--bg-surface)] border rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form ${
+                        fieldErrors.description ? "border-[var(--accent-error)]" : "border-[var(--border-primary)]"
+                      }`}
                       rows={4}
                       required 
                     />
+                    {fieldErrors.description && (
+                      <p className="mt-2 text-sm text-[var(--accent-error)]">{fieldErrors.description}</p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -139,6 +245,8 @@ export default function CreateSpotPage() {
                       type="number"
                       placeholder="10000"
                       required
+                      error={fieldErrors.pricePerHour}
+                      helperText="Например: 10000 = 100 ₽"
                     />
                     <div>
                       <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
@@ -146,7 +254,9 @@ export default function CreateSpotPage() {
                       </label>
                       <select 
                         name="accessType" 
-                        className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form"
+                        className={`w-full px-4 py-3 bg-[var(--bg-surface)] border rounded-xl text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form ${
+                          fieldErrors.accessType ? "border-[var(--accent-error)]" : "border-[var(--border-primary)]"
+                        }`}
                       >
                         <option value="PRIVATE_GATE">Закрытая территория</option>
                         <option value="STREET">Улица</option>
@@ -154,6 +264,9 @@ export default function CreateSpotPage() {
                         <option value="YARD">Двор</option>
                         <option value="OTHER">Другое</option>
                       </select>
+                      {fieldErrors.accessType && (
+                        <p className="mt-2 text-sm text-[var(--accent-error)]">{fieldErrors.accessType}</p>
+                      )}
                     </div>
                   </div>
 
@@ -165,6 +278,7 @@ export default function CreateSpotPage() {
                       step="0.1"
                       placeholder="5.0"
                       required
+                      error={fieldErrors.sizeL}
                     />
                     <Input
                       name="sizeW"
@@ -173,6 +287,7 @@ export default function CreateSpotPage() {
                       step="0.1"
                       placeholder="2.5"
                       required
+                      error={fieldErrors.sizeW}
                     />
                     <Input
                       name="sizeH"
@@ -181,6 +296,7 @@ export default function CreateSpotPage() {
                       step="0.1"
                       placeholder="2.2"
                       required
+                      error={fieldErrors.sizeH}
                     />
                   </div>
 
@@ -191,8 +307,14 @@ export default function CreateSpotPage() {
                     <input 
                       name="address" 
                       placeholder="Укажите точный адрес"
-                      className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form"
+                      className={`w-full px-4 py-3 bg-[var(--bg-surface)] border rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form ${
+                        fieldErrors.address ? "border-[var(--accent-error)]" : "border-[var(--border-primary)]"
+                      }`}
+                      required
                     />
+                    {fieldErrors.address && (
+                      <p className="mt-2 text-sm text-[var(--accent-error)]">{fieldErrors.address}</p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -202,6 +324,9 @@ export default function CreateSpotPage() {
                       type="number"
                       step="any"
                       placeholder="55.7558"
+                      required
+                      error={fieldErrors.geoLat}
+                      helperText="От -90 до 90"
                     />
                     <Input
                       name="geoLng"
@@ -209,6 +334,9 @@ export default function CreateSpotPage() {
                       type="number"
                       step="any"
                       placeholder="37.6176"
+                      required
+                      error={fieldErrors.geoLng}
+                      helperText="От -180 до 180"
                     />
                   </div>
                 </div>
@@ -276,8 +404,20 @@ export default function CreateSpotPage() {
                   
                   <label className="block w-full">
                     <input type="file" accept="image/*" className="hidden" onChange={handleFilePick} />
-                    <Button type="button" variant="outline" icon="📷" className="w-full mobile-btn">Добавить фото ({photos.length}/10)</Button>
+                    <Button 
+                      type="button" 
+                      variant={fieldErrors.photos ? "outline" : "outline"} 
+                      icon="📷" 
+                      className={`w-full mobile-btn ${
+                        fieldErrors.photos ? "border-[var(--accent-error)] text-[var(--accent-error)]" : ""
+                      }`}
+                    >
+                      Добавить фото ({photos.length}/10)
+                    </Button>
                   </label>
+                  {fieldErrors.photos && (
+                    <p className="text-sm text-[var(--accent-error)]">{fieldErrors.photos}</p>
+                  )}
                 </div>
               </CardContent>
             </MotionCard>
@@ -297,9 +437,15 @@ export default function CreateSpotPage() {
                   <textarea 
                     name="rules" 
                     placeholder="Например: Не курить, соблюдать тишину после 22:00..."
-                    className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-primary)] rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form"
+                    className={`w-full px-4 py-3 bg-[var(--bg-surface)] border rounded-xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all duration-300 mobile-form ${
+                      fieldErrors.rules ? "border-[var(--accent-error)]" : "border-[var(--border-primary)]"
+                    }`}
                     rows={3}
+                    required
                   />
+                  {fieldErrors.rules && (
+                    <p className="mt-2 text-sm text-[var(--accent-error)]">{fieldErrors.rules}</p>
+                  )}
                 </div>
               </CardContent>
             </MotionCard>

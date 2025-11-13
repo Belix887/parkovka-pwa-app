@@ -66,11 +66,20 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-	const body = await req.json();
-	const parsed = spotCreateSchema.safeParse(body);
-	if (!parsed.success) return NextResponse.json({ error: "Некорректные данные" }, { status: 400 });
-	const user = await getCurrentUser();
-	if (!user) return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
+	try {
+		const body = await req.json();
+		const parsed = spotCreateSchema.safeParse(body);
+		if (!parsed.success) {
+			return NextResponse.json({ 
+				error: "Некорректные данные",
+				details: parsed.error.issues.map(issue => ({
+					path: issue.path.join('.'),
+					message: issue.message,
+				}))
+			}, { status: 400 });
+		}
+		const user = await getCurrentUser();
+		if (!user) return NextResponse.json({ error: "Требуется авторизация" }, { status: 401 });
 
 	const {
 		title, description, pricePerHour, sizeL, sizeW, sizeH,
@@ -92,10 +101,7 @@ export async function POST(req: Request) {
 	});
 
 	const autoResult = autoModerateSpot(parsed.data);
-	const statusAfter =
-		autoResult.status === "PENDING_REVIEW"
-			? "PENDING_REVIEW"
-			: autoResult.status;
+	const statusAfter = autoResult.status as any;
 
 	const finalSpot =
 		statusAfter === baseStatus
@@ -121,6 +127,13 @@ export async function POST(req: Request) {
 	} as any);
 
 	return NextResponse.json({ id: finalSpot.id, status: finalSpot.status });
+	} catch (error: unknown) {
+		console.error("Error creating spot:", error);
+		return NextResponse.json(
+			{ error: "Ошибка сервера при создании места" },
+			{ status: 500 }
+		);
+	}
 }
 
 
