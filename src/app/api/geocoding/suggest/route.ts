@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const YANDEX_GEOCODER_API_KEY = process.env.YANDEX_MAPS_API_KEY || process.env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY;
+const GRAPHHOPPER_API_KEY = process.env.GRAPHHOPPER_API_KEY || process.env.NEXT_PUBLIC_GRAPHHOPPER_API_KEY || "aa902198-c697-4891-a0f0-6a443a3e8889";
 
 export async function POST(req: Request) {
   try {
@@ -10,54 +10,59 @@ export async function POST(req: Request) {
       return NextResponse.json({ suggestions: [] });
     }
 
-    // Используем обычный Geocoder API для поиска (более надежный вариант)
-    // Yandex Suggest API требует отдельной подписки и может не работать с обычным ключом
+    if (!GRAPHHOPPER_API_KEY) {
+      return NextResponse.json({ 
+        suggestions: [],
+        error: "GraphHopper API ключ не настроен"
+      });
+    }
 
-    // Используем обычный Geocoder API для поиска адресов
-    if (YANDEX_GEOCODER_API_KEY) {
-      // Пробуем несколько вариантов запроса для лучших результатов
-      const queries = [
-        `${city}, ${query}`, // С городом
-        query, // Без города (может найти адреса в других городах, но лучше для Москвы)
-      ];
+    // GraphHopper Geocoding API для автодополнения
+    // Пробуем несколько вариантов запроса
+    const queries = [
+      `${city}, ${query}`, // С городом
+      query, // Без города
+    ];
 
-      for (const fullQuery of queries) {
-        try {
-          const url = `https://geocode-maps.yandex.ru/1.x/?apikey=${YANDEX_GEOCODER_API_KEY}&geocode=${encodeURIComponent(fullQuery)}&format=json&results=5&kind=house,street`;
+    for (const fullQuery of queries) {
+      try {
+        const url = `https://graphhopper.com/api/1/geocode?q=${encodeURIComponent(fullQuery)}&key=${GRAPHHOPPER_API_KEY}&limit=5&locale=ru`;
 
-          const response = await fetch(url);
-          if (response.ok) {
-            const data = await response.json();
-            const featureMembers = data.response?.GeoObjectCollection?.featureMember || [];
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          const hits = data.hits || [];
 
-            if (featureMembers.length > 0) {
-              const suggestions = featureMembers.map((member: any) => {
-                const geoObject = member.GeoObject;
-                const pos = geoObject.Point.pos.split(" ");
-                const lng = parseFloat(pos[0]);
-                const lat = parseFloat(pos[1]);
-                const formattedAddress = geoObject.metaDataProperty?.GeocoderMetaData?.text || query;
+          if (hits.length > 0) {
+            const suggestions = hits.map((hit: any) => {
+              const point = hit.point;
+              const lat = point.lat;
+              const lng = point.lng;
+              
+              // Формируем адрес
+              const formattedAddress = hit.name 
+                ? `${hit.name}${hit.housenumber ? `, ${hit.housenumber}` : ""}`
+                : hit.street
+                ? `${hit.street}${hit.housenumber ? `, ${hit.housenumber}` : ""}${hit.city ? `, ${hit.city}` : ""}`
+                : fullQuery;
 
-                return {
-                  value: formattedAddress,
-                  lat,
-                  lng,
-                  formattedAddress,
-                };
-              });
+              return {
+                value: formattedAddress,
+                lat,
+                lng,
+                formattedAddress,
+              };
+            });
 
-              if (suggestions.length > 0) {
-                return NextResponse.json({ suggestions });
-              }
+            if (suggestions.length > 0) {
+              return NextResponse.json({ suggestions });
             }
           }
-        } catch (err) {
-          console.error("Geocoding query error:", err);
-          continue; // Пробуем следующий вариант
         }
+      } catch (err) {
+        console.error("GraphHopper geocoding query error:", err);
+        continue; // Пробуем следующий вариант
       }
-    } else {
-      console.warn("Yandex Maps API ключ не настроен. Автодополнение адресов не будет работать.");
     }
 
     // Если ничего не найдено, возвращаем пустой массив

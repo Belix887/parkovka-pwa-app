@@ -49,8 +49,27 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Скрываем атрибуцию Leaflet на картах */
-.leaflet-control-attribution {
+/* Полностью скрываем атрибуцию Leaflet на картах */
+.leaflet-control-attribution,
+.leaflet-control-attribution.leaflet-control,
+a[href*="openstreetmap"],
+a[href*="leaflet"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* Скрываем все элементы с текстом Leaflet или OSM */
+.leaflet-bottom.leaflet-right {
+  display: none !important;
+}
+
+.leaflet-control-container .leaflet-control-attribution {
   display: none !important;
 }
 

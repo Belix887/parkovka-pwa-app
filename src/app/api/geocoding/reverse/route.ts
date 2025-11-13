@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const YANDEX_GEOCODER_API_KEY = process.env.YANDEX_MAPS_API_KEY || process.env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY;
+const GRAPHHOPPER_API_KEY = process.env.GRAPHHOPPER_API_KEY || process.env.NEXT_PUBLIC_GRAPHHOPPER_API_KEY || "aa902198-c697-4891-a0f0-6a443a3e8889";
 
 export async function POST(req: Request) {
   try {
@@ -13,32 +13,37 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!YANDEX_GEOCODER_API_KEY) {
+    if (!GRAPHHOPPER_API_KEY) {
       return NextResponse.json(
-        { error: "Yandex Maps API ключ не настроен" },
+        { error: "GraphHopper API ключ не настроен" },
         { status: 500 }
       );
     }
 
-    const url = `https://geocode-maps.yandex.ru/1.x/?apikey=${YANDEX_GEOCODER_API_KEY}&geocode=${lng},${lat}&format=json&results=1`;
+    // GraphHopper Reverse Geocoding API
+    const url = `https://graphhopper.com/api/1/geocode?point=${lat},${lng}&reverse=true&key=${GRAPHHOPPER_API_KEY}&limit=1&locale=ru`;
 
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error("Yandex Geocoder API error");
+      throw new Error("GraphHopper Reverse Geocoding API error");
     }
 
     const data = await response.json();
-    const featureMember = data.response?.GeoObjectCollection?.featureMember?.[0];
+    const hits = data.hits || [];
 
-    if (!featureMember) {
+    if (hits.length === 0) {
       return NextResponse.json(
         { error: "Адрес не найден" },
         { status: 404 }
       );
     }
 
-    const geoObject = featureMember.GeoObject;
-    const address = geoObject.metaDataProperty?.GeocoderMetaData?.text || null;
+    const hit = hits[0];
+    const address = hit.name 
+      ? `${hit.name}${hit.housenumber ? `, ${hit.housenumber}` : ""}`
+      : hit.street
+      ? `${hit.street}${hit.housenumber ? `, ${hit.housenumber}` : ""}${hit.city ? `, ${hit.city}` : ""}`
+      : null;
 
     return NextResponse.json({ address });
   } catch (error) {
