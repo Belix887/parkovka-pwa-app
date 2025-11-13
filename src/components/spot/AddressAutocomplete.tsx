@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { suggestAddresses, GeocodeSuggestion } from "@/lib/geocoding";
 
 interface AddressAutocompleteProps {
@@ -23,8 +23,10 @@ export function AddressAutocomplete({
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -42,27 +44,68 @@ export function AddressAutocomplete({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Очистка таймера при размонтировании
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
+  const fetchSuggestions = useCallback(async (query: string) => {
+    if (query.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      setErrorMessage(null);
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage(null);
+    
+    try {
+      console.log("Fetching suggestions for:", query);
+      const results = await suggestAddresses(query);
+      console.log("Received suggestions:", results);
+      
+      setSuggestions(results);
+      setShowSuggestions(results.length > 0);
+      
+      if (results.length === 0 && query.trim().length >= 2) {
+        setErrorMessage("Адреса не найдены. Попробуйте ввести другой адрес или проверьте настройки API ключа.");
+      }
+    } catch (error) {
+      console.error("Address suggestions error:", error);
+      setSuggestions([]);
+      setShowSuggestions(false);
+      setErrorMessage("Ошибка при поиске адресов. Проверьте подключение к интернету и настройки API.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     onChange(newValue);
 
-    if (newValue.length >= 2) {
-      setLoading(true);
-      try {
-        const results = await suggestAddresses(newValue);
-        setSuggestions(results);
-        setShowSuggestions(results.length > 0);
-      } catch (error) {
-        console.error("Address suggestions error:", error);
-        setSuggestions([]);
-        setShowSuggestions(false);
-      } finally {
-        setLoading(false);
-      }
-    } else {
+    // Очищаем предыдущий таймер
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Если текст слишком короткий, сразу очищаем
+    if (newValue.trim().length < 2) {
       setSuggestions([]);
       setShowSuggestions(false);
+      setErrorMessage(null);
+      return;
     }
+
+    // Устанавливаем новый таймер для debounce (500ms)
+    debounceTimerRef.current = setTimeout(() => {
+      fetchSuggestions(newValue);
+    }, 500);
   };
 
   const handleSelect = (suggestion: GeocodeSuggestion) => {
@@ -125,8 +168,14 @@ export function AddressAutocomplete({
         </div>
       )}
 
-      {error && (
-        <p className="mt-2 text-sm text-[var(--accent-error)]">{error}</p>
+      {(error || errorMessage) && (
+        <p className="mt-2 text-sm text-[var(--accent-error)]">{error || errorMessage}</p>
+      )}
+      
+      {!loading && !error && !errorMessage && value.length >= 2 && suggestions.length === 0 && (
+        <p className="mt-2 text-xs text-[var(--text-muted)]">
+          Введите больше символов для поиска адресов
+        </p>
       )}
     </div>
   );
