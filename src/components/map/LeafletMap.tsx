@@ -67,6 +67,13 @@ export default function LeafletMap({
     }
   }, [spots, loadSpots]);
 
+  // Логируем для отладки
+  useEffect(() => {
+    if (mapSpots.length > 0) {
+      console.log("Map spots:", mapSpots);
+    }
+  }, [mapSpots]);
+
   useEffect(() => {
     if (loadSpots) {
       loadParkingSpots();
@@ -146,7 +153,7 @@ export default function LeafletMap({
         />
         <MapCenterUpdater center={center as [number, number]} zoom={zoom} />
         
-        {mapSpots.filter(spot => 
+        {mapSpots.length > 0 && mapSpots.filter(spot => 
           spot && 
           typeof spot.geoLat === 'number' && 
           typeof spot.geoLng === 'number' &&
@@ -154,7 +161,9 @@ export default function LeafletMap({
           !isNaN(spot.geoLng) &&
           spot.geoLat >= -90 && spot.geoLat <= 90 &&
           spot.geoLng >= -180 && spot.geoLng <= 180
-        ).map((spot) => (
+        ).map((spot) => {
+          console.log("Rendering marker for spot:", spot.id, "at", spot.geoLat, spot.geoLng);
+          return (
           <Marker 
             key={spot.id} 
             position={[spot.geoLat, spot.geoLng] as [number, number]} 
@@ -213,7 +222,8 @@ export default function LeafletMap({
               </div>
             </Popup>
           </Marker>
-        ))}
+          );
+        })}
       </MapContainer>
     </div>
   );
