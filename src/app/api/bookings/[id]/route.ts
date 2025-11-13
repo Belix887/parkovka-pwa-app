@@ -10,7 +10,28 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     const booking = await (prisma as any).booking.findUnique({
       where: { id },
-      include: { spot: true },
+      include: { 
+        spot: {
+          select: {
+            id: true,
+            title: true,
+            address: true,
+            pricePerHour: true,
+            geoLat: true,
+            geoLng: true,
+            ownerId: true,
+            cancellationPolicy: true,
+            cancellationDeadlineHours: true,
+          }
+        },
+        renter: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          }
+        }
+      },
     });
     if (!booking) return NextResponse.json({ error: "Бронирование не найдено" }, { status: 404 });
 

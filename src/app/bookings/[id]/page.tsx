@@ -244,27 +244,29 @@ export default function BookingDetailPage({
 											icon="🗺️"
 										/>
 										<CardContent>
-											<RouteMap
-												from={{
-													lat: booking.renterLat,
-													lng: booking.renterLng,
-												}}
-												to={{
-													lat: 0, // Нужно получить из spot
-													lng: 0,
-												}}
-												route={
-													booking.routePolyline
-														? {
-																distance: booking.routeDistance || 0,
-																duration: booking.routeDuration || 0,
-																geometry: booking.routePolyline,
-																steps: [],
-															}
-														: null
-												}
-												height="400px"
-											/>
+											{booking.spot && (
+												<RouteMap
+													from={{
+														lat: booking.renterLat,
+														lng: booking.renterLng,
+													}}
+													to={{
+														lat: (booking.spot as any).geoLat || 0,
+														lng: (booking.spot as any).geoLng || 0,
+													}}
+													route={
+														booking.routePolyline
+															? {
+																	distance: booking.routeDistance || 0,
+																	duration: booking.routeDuration || 0,
+																	geometry: booking.routePolyline,
+																	steps: [],
+																}
+															: null
+													}
+													height="400px"
+												/>
+											)}
 										</CardContent>
 									</MotionCard>
 								)}
