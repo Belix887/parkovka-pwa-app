@@ -49,6 +49,11 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Скрываем атрибуцию Leaflet на картах */
+.leaflet-control-attribution {
+  display: none !important;
+}
+
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
