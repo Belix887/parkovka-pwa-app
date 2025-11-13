@@ -26,34 +26,71 @@ export default function CreateSpotPage() {
   const [geoLng, setGeoLng] = useState<number | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([55.751244, 37.618423]);
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { showSuccess, showError, showInfo } = useToast();
   const router = useRouter();
 
   async function handleFilePick(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (photos.length >= 10) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    const remainingSlots = 10 - photos.length;
+    if (remainingSlots <= 0) {
       showError("Превышен лимит", "Максимум 10 фотографий");
+      e.currentTarget.value = "";
       return;
     }
-    try {
-      const res = await fetch("/api/uploads/sign", { method: "POST" });
-      const data = await res.json();
-      if (data.signedUrl) {
-        await fetch(data.signedUrl, { method: data.method || 'PUT', headers: data.headers || {}, body: file });
-        setPhotos((p) => [...p, data.publicUrl]);
-        showInfo("Фото добавлено", "Фотография успешно загружена");
-      } else if (data.publicUrl) {
-        setPhotos((p) => [...p, data.publicUrl]);
-        showInfo("Фото добавлено", "Использован плейсхолдер");
-      } else {
-        throw new Error("no url");
+
+    // Обрабатываем файлы (максимум до лимита)
+    const filesToProcess = Array.from(files).slice(0, remainingSlots);
+    
+    for (const file of filesToProcess) {
+      // Проверяем тип файла
+      if (!file.type.startsWith('image/')) {
+        showError("Некорректный файл", "Выберите изображение");
+        continue;
       }
-    } catch (err) {
-      showError("Ошибка загрузки", "Не удалось загрузить фото");
-    } finally {
-      e.currentTarget.value = "";
+
+      // Проверяем размер файла (максимум 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        showError("Файл слишком большой", "Максимальный размер файла: 10MB");
+        continue;
+      }
+
+      try {
+        const res = await fetch("/api/uploads/sign", { method: "POST" });
+        if (!res.ok) {
+          throw new Error("Ошибка получения URL для загрузки");
+        }
+        
+        const data = await res.json();
+        if (data.signedUrl) {
+          const uploadRes = await fetch(data.signedUrl, { 
+            method: data.method || 'PUT', 
+            headers: data.headers || {}, 
+            body: file 
+          });
+          
+          if (!uploadRes.ok) {
+            throw new Error("Ошибка загрузки файла");
+          }
+          
+          setPhotos((p) => [...p, data.publicUrl]);
+          showInfo("Фото добавлено", "Фотография успешно загружена");
+        } else if (data.publicUrl) {
+          setPhotos((p) => [...p, data.publicUrl]);
+          showInfo("Фото добавлено", "Использован плейсхолдер");
+        } else {
+          throw new Error("URL не получен");
+        }
+      } catch (err) {
+        console.error("Ошибка загрузки фото:", err);
+        showError("Ошибка загрузки", `Не удалось загрузить ${file.name}`);
+      }
     }
+    
+    // Очищаем input для возможности повторной загрузки того же файла
+    e.currentTarget.value = "";
   }
 
   const handleAddressSelect = (suggestion: GeocodeSuggestion) => {
@@ -498,19 +535,29 @@ export default function CreateSpotPage() {
                     ))}
                   </div>
                   
-                  <label className="block w-full">
-                    <input type="file" accept="image/*" className="hidden" onChange={handleFilePick} />
+                  <div className="block w-full">
+                    <input 
+                      ref={fileInputRef}
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={handleFilePick}
+                      multiple={true}
+                    />
                     <Button 
                       type="button" 
                       variant={fieldErrors.photos ? "outline" : "outline"} 
                       icon="📷" 
+                      onClick={() => {
+                        fileInputRef.current?.click();
+                      }}
                       className={`w-full mobile-btn ${
                         fieldErrors.photos ? "border-[var(--accent-error)] text-[var(--accent-error)]" : ""
                       }`}
                     >
                       Добавить фото ({photos.length}/10)
                     </Button>
-                  </label>
+                  </div>
                   {fieldErrors.photos && (
                     <p className="text-sm text-[var(--accent-error)]">{fieldErrors.photos}</p>
                   )}
