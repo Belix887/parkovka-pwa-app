@@ -9,44 +9,17 @@ const parkingIcon = L.divIcon({
   className: 'custom-parking-icon',
   html: `
     <div style="
-      position: relative;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    ">
-      <div style="
-        position: absolute;
-        width: 44px;
-        height: 44px;
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
-        border-radius: 50%;
-        border: 3px solid white;
-        box-shadow: 
-          0 4px 12px rgba(37, 99, 235, 0.4),
-          0 0 0 2px rgba(37, 99, 235, 0.15),
-          inset 0 2px 4px rgba(255, 255, 255, 0.3),
-          inset 0 -2px 4px rgba(0, 0, 0, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        color: white;
-        font-weight: 900;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        letter-spacing: -1px;
-        line-height: 1;
-        padding: 0;
-        margin: 0;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-        transform: translateZ(0);
-      ">P</div>
-    </div>
+      font-size: 32px;
+      color: #2563eb;
+      font-weight: 900;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1;
+      text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
+    ">P</div>
   `,
-  iconSize: [44, 44],
-  iconAnchor: [22, 22],
-  popupAnchor: [0, -22]
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+  popupAnchor: [0, -16]
 });
 
 interface ParkingSpot {
