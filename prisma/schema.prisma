@@ -28,6 +28,9 @@ model User {
   depositTransactionsCreated DepositTransaction[] @relation("UserDepositTransactions")
   verificationDocumentsReviewed VerificationDocument[] @relation("VerificationDocumentReviewer")
   spotModerationDecisions SpotModerationLog[] @relation("SpotModerationReviewer")
+  reviews       Review[]      @relation("RenterReviews")
+  moderatedReviews Review[]  @relation("ModeratorReviews")
+  favorites     Favorite[]
 }
 
 enum UserRole {
@@ -46,6 +49,7 @@ model ParkingSpot {
   description        String
   pricePerHour       Int
   currency           String        @default("RUB")
+  spotNumber         String?       // Номер парковочного места
 
   sizeL              Float
   sizeW              Float
@@ -77,6 +81,8 @@ model ParkingSpot {
   blackouts          BookingBlock[]
   bookings           Booking[]
   moderationLogs     SpotModerationLog[]
+  reviews            Review[]
+  favorites          Favorite[]
 
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
@@ -163,6 +169,7 @@ model Booking {
   routePolyline    String?        // Полилиния маршрута (JSON)
 
   depositTransactions DepositTransaction[]
+  review            Review?
 
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
@@ -360,6 +367,76 @@ model SpotModerationLog {
   @@index([spotId])
   @@index([decision])
   @@index([statusAfter])
+}
+
+// Рейтинги и отзывы
+model Review {
+  id            String   @id @default(cuid())
+  spotId       String
+  spot         ParkingSpot @relation(fields: [spotId], references: [id], onDelete: Cascade)
+  renterId     String
+  renter       User     @relation("RenterReviews", fields: [renterId], references: [id])
+  bookingId    String?  @unique // Связь с бронированием (один отзыв на бронирование)
+  booking      Booking? @relation(fields: [bookingId], references: [id])
+  
+  rating       Int      // 1-5 звезд
+  title        String?  // Заголовок отзыва
+  comment      String   // Текст отзыва
+  photos       ReviewPhoto[]
+  
+  // Ответ владельца
+  ownerResponse String?
+  ownerResponseAt DateTime?
+  
+  // Модерация
+  status       ReviewStatus @default(PENDING)
+  moderatedAt  DateTime?
+  moderatorId  String?
+  moderator    User?    @relation("ModeratorReviews", fields: [moderatorId], references: [id])
+  
+  // Полезность отзыва
+  helpfulCount Int      @default(0)
+  reportedCount Int     @default(0)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([spotId])
+  @@index([renterId])
+  @@index([status])
+  @@index([rating])
+}
+
+model ReviewPhoto {
+  id        String  @id @default(cuid())
+  reviewId  String
+  review    Review  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  url       String
+  sortOrder Int     @default(0)
+  
+  @@index([reviewId])
+}
+
+enum ReviewStatus {
+  PENDING      // На модерации
+  APPROVED     // Одобрен
+  REJECTED     // Отклонен
+  HIDDEN       // Скрыт (после жалоб)
+}
+
+// Избранное
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spotId    String
+  spot      ParkingSpot @relation(fields: [spotId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, spotId]) // Один пользователь может добавить место только один раз
+  @@index([userId])
+  @@index([spotId])
 }
 
 

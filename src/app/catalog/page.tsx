@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { InteractiveFilters } from "@/components/ui/InteractiveFilters";
 import { MobileNavigation } from "@/components/ui/MobileNavigation";
+import { RatingStars } from "@/components/reviews/RatingStars";
 import Link from "next/link";
 
 interface ParkingSpot {
@@ -26,6 +27,9 @@ interface ParkingSpot {
   wideEntrance: boolean;
   photos: { url: string }[];
   status: string;
+  averageRating?: number;
+  reviewCount?: number;
+  spotNumber?: string | null;
 }
 
 export default function CatalogPage() {
@@ -244,6 +248,16 @@ export default function CatalogPage() {
                       <p className="text-xs md:text-sm text-[var(--text-secondary)] mb-2 break-words">
                         {spot.address}
                       </p>
+                      
+                      {/* Рейтинг */}
+                      {spot.averageRating && spot.averageRating > 0 && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <RatingStars rating={spot.averageRating} size="sm" />
+                          <span className="text-xs text-[var(--text-secondary)]">
+                            ({spot.reviewCount || 0})
+                          </span>
+                        </div>
+                      )}
                       
                       <p className="text-xs md:text-sm text-[var(--text-secondary)] mb-3 line-clamp-2 break-words">
                         {spot.description}

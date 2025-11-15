@@ -123,6 +123,7 @@ export async function GET() {
           evCharging: spot.evCharging,
           disabledAccessible: spot.disabledAccessible,
           wideEntrance: spot.wideEntrance,
+          spotNumber: spot.spotNumber || null,
           photos: (spot.photos || []).map((photo: any) => ({ url: photo.url })),
         }));
         

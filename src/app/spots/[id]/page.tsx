@@ -9,11 +9,16 @@ import { GeolocationPrompt } from "@/components/booking/GeolocationPrompt";
 import { RouteMap } from "@/components/booking/RouteMap";
 import { RouteInfo } from "@/components/booking/RouteInfo";
 import { AvailabilityCalendar } from "@/components/booking/AvailabilityCalendar";
+import { FavoriteButton } from "@/components/favorites/FavoriteButton";
+import { ReviewsList } from "@/components/reviews/ReviewsList";
+import { ReviewForm } from "@/components/reviews/ReviewForm";
+import { RatingStars } from "@/components/reviews/RatingStars";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import type { Route, RoutePoint } from "@/lib/routing";
 import dynamic from "next/dynamic";
+import { useState, useEffect } from "react";
 
 const LeafletMap = dynamic(() => import("@/components/map/LeafletMap"), { ssr: false });
 
@@ -31,6 +36,8 @@ interface ParkingSpot {
   evCharging: boolean;
   disabledAccessible: boolean;
   wideEntrance: boolean;
+  spotNumber?: string | null;
+  ownerId?: string;
   photos: { url: string }[];
 }
 
@@ -38,6 +45,11 @@ export default function SpotPage({ params }: { params: Promise<{ id: string }> }
   const [spot, setSpot] = useState<ParkingSpot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [canReview, setCanReview] = useState(false);
+  const [averageRating, setAverageRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   // Геолокация и маршрутизация
   const { coordinates: userLocation, loading: locationLoading, requestLocation } = useGeolocation({
@@ -56,9 +68,22 @@ export default function SpotPage({ params }: { params: Promise<{ id: string }> }
     const loadData = async () => {
       const { id } = await params;
       await loadSpot(id);
+      await loadCurrentUser();
     };
     loadData();
   }, [params]);
+
+  const loadCurrentUser = async () => {
+    try {
+      const response = await fetch("/api/me");
+      if (response.ok) {
+        const user = await response.json();
+        setCurrentUserId(user?.id || null);
+      }
+    } catch (error) {
+      console.error("Error loading current user:", error);
+    }
+  };
 
   const loadSpot = async (spotId: string) => {
     try {
@@ -73,6 +98,12 @@ export default function SpotPage({ params }: { params: Promise<{ id: string }> }
       const data = await response.json();
       setSpot(data);
       
+      // Загружаем статистику отзывов
+      loadReviewStats(spotId);
+      
+      // Проверяем, может ли пользователь оставить отзыв
+      checkCanReview(spotId);
+      
       // Автоматически запрашиваем геолокацию после загрузки места
       if (!userLocation) {
         setShowGeolocationPrompt(true);
@@ -82,6 +113,55 @@ export default function SpotPage({ params }: { params: Promise<{ id: string }> }
       setError(error instanceof Error ? error.message : 'Ошибка загрузки');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadReviewStats = async (spotId: string) => {
+    try {
+      const response = await fetch(`/api/spots/${spotId}/reviews?limit=1`);
+      if (response.ok) {
+        const data = await response.json();
+        setAverageRating(data.statistics?.averageRating || 0);
+        setReviewCount(data.statistics?.totalReviews || 0);
+      }
+    } catch (error) {
+      console.error('Error loading review stats:', error);
+    }
+  };
+
+  const checkCanReview = async (spotId: string) => {
+    try {
+      // Проверяем, есть ли завершенные бронирования пользователя
+      const response = await fetch('/api/bookings');
+      if (response.ok) {
+        const bookings = await response.json();
+        const completedBookings = bookings.filter(
+          (b: any) => b.spotId === spotId && 
+          (b.status === 'PAID' || b.status === 'APPROVED') && 
+          new Date(b.endAt) < new Date()
+        );
+        
+        if (completedBookings.length > 0) {
+          // Проверяем, не оставлен ли уже отзыв на эти бронирования
+          const bookingIds = completedBookings.map((b: any) => b.id);
+          const reviewsResponse = await fetch(`/api/spots/${spotId}/reviews?limit=100`);
+          if (reviewsResponse.ok) {
+            const reviewsData = await reviewsResponse.json();
+            const userReviews = reviewsData.reviews || [];
+            const hasReviewForBooking = bookingIds.some((bookingId: string) =>
+              userReviews.some((r: any) => r.bookingId === bookingId)
+            );
+            setCanReview(!hasReviewForBooking);
+          } else {
+            setCanReview(true);
+          }
+        } else {
+          setCanReview(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking can review:', error);
+      setCanReview(false);
     }
   };
 
@@ -241,15 +321,29 @@ export default function SpotPage({ params }: { params: Promise<{ id: string }> }
                     <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">
                       {spot.title}
                     </h1>
+                    {spot.spotNumber && (
+                      <div className="mb-2">
+                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium border border-blue-200">
+                          <span>🔢</span>
+                          Номер места: <span className="font-bold">{spot.spotNumber}</span>
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 text-[var(--text-secondary)] mb-4">
                       <span className="text-red-500">📍</span>
                       <span className="text-lg font-medium">{spot.address}</span>
                     </div>
                   </div>
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 flex flex-col items-end gap-3">
                     <div className="bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white px-6 py-3 rounded-xl font-bold text-2xl shadow-lg">
                       {formatPrice(spot.pricePerHour)}
                     </div>
+                    <FavoriteButton
+                      spotId={spot.id}
+                      size="lg"
+                      showText={true}
+                      className="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all"
+                    />
                   </div>
                 </div>
                 
@@ -481,14 +575,6 @@ export default function SpotPage({ params }: { params: Promise<{ id: string }> }
                   <Button 
                     variant="outline" 
                     size="md" 
-                    className="w-full hover:bg-red-50 hover:border-red-300 hover:text-red-600"
-                    icon="❤️"
-                  >
-                    Добавить в избранное
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="md" 
                     className="w-full"
                     icon="📤"
                   >
@@ -499,6 +585,73 @@ export default function SpotPage({ params }: { params: Promise<{ id: string }> }
             </MotionCard>
           </div>
         </div>
+
+        {/* Отзывы */}
+        {spot && (
+          <div className="mt-8">
+            <MotionCard>
+              <CardHeader
+                title="Отзывы"
+                subtitle={
+                  reviewCount > 0
+                    ? `${reviewCount} ${reviewCount === 1 ? 'отзыв' : reviewCount < 5 ? 'отзыва' : 'отзывов'}`
+                    : "Пока нет отзывов"
+                }
+                icon="💬"
+              />
+              <CardContent>
+                {/* Средний рейтинг в заголовке */}
+                {averageRating > 0 && (
+                  <div className="mb-6 flex items-center gap-3">
+                    <RatingStars rating={averageRating} size="lg" />
+                    <span className="text-lg font-semibold text-[var(--text-primary)]">
+                      {averageRating.toFixed(1)} из 5
+                    </span>
+                  </div>
+                )}
+
+                {/* Кнопка оставить отзыв */}
+                {canReview && !showReviewForm && (
+                  <div className="mb-6">
+                    <Button
+                      variant="primary"
+                      onClick={() => setShowReviewForm(true)}
+                      icon="✍️"
+                    >
+                      Оставить отзыв
+                    </Button>
+                  </div>
+                )}
+
+                {/* Форма отзыва */}
+                {showReviewForm && (
+                  <div className="mb-6 p-4 bg-[var(--bg-tertiary)] rounded-lg">
+                    <ReviewForm
+                      spotId={spot.id}
+                      onSuccess={() => {
+                        setShowReviewForm(false);
+                        loadReviewStats(spot.id);
+                        // Перезагружаем список отзывов
+                        window.location.reload();
+                      }}
+                      onCancel={() => setShowReviewForm(false)}
+                    />
+                  </div>
+                )}
+
+                {/* Список отзывов */}
+                <ReviewsList
+                  spotId={spot.id}
+                  spotOwnerId={spot.ownerId}
+                  currentUserId={currentUserId || undefined}
+                  onReviewCreated={() => {
+                    loadReviewStats(spot.id);
+                  }}
+                />
+              </CardContent>
+            </MotionCard>
+          </div>
+        )}
       </div>
     </main>
   );

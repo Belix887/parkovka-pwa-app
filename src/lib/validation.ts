@@ -109,6 +109,7 @@ const spotBaseSchema = z.object({
 	address: addressSchema,
 	geoLat: coordinateSchema,
 	geoLng: longitudeSchema,
+	spotNumber: z.string().trim().max(50, { message: "Номер места не должен превышать 50 символов" }).optional(),
 	photos: z
 		.array(photoSchema)
 		.min(1, { message: "Добавьте хотя бы одно фото" })
@@ -181,3 +182,23 @@ export const userUpdateSchema = z.object({
 	phone: phoneSchema.optional(),
 });
 
+// Схемы для отзывов
+export const reviewCreateSchema = z.object({
+	spotId: z.string().trim().min(1, { message: "Укажите идентификатор места" }),
+	bookingId: z.string().trim().min(1, { message: "Укажите идентификатор бронирования" }).optional(),
+	rating: z.number().int().min(1, { message: "Рейтинг должен быть от 1 до 5" }).max(5, { message: "Рейтинг должен быть от 1 до 5" }),
+	title: trimmedString(0, 100, "Заголовок не должен превышать 100 символов").optional(),
+	comment: trimmedString(10, 2000, "Комментарий должен содержать от 10 до 2000 символов"),
+	photos: z.array(photoSchema).max(3, { message: "Максимум 3 фотографии" }).optional(),
+});
+
+export const reviewUpdateSchema = z.object({
+	rating: z.number().int().min(1).max(5).optional(),
+	title: trimmedString(0, 100, "Заголовок не должен превышать 100 символов").optional(),
+	comment: trimmedString(10, 2000, "Комментарий должен содержать от 10 до 2000 символов").optional(),
+	photos: z.array(photoSchema).max(3, { message: "Максимум 3 фотографии" }).optional(),
+});
+
+export const reviewResponseSchema = z.object({
+	response: trimmedString(1, 1000, "Ответ должен содержать от 1 до 1000 символов"),
+});

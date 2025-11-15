@@ -133,6 +133,16 @@ export function MobileNavigation({ user }: MobileNavigationProps) {
                   📋 Каталог
                 </Link>
                 
+                {currentUser && (
+                  <Link 
+                    href="/favorites" 
+                    className="block w-full text-left px-3 py-3 rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    ❤️ Избранное
+                  </Link>
+                )}
+                
                 <Link 
                   href="/pwa-install" 
                   className="block w-full text-left px-3 py-3 rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors"

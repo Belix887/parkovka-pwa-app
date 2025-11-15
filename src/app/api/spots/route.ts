@@ -59,10 +59,33 @@ export async function GET(req: Request) {
 		skip,
 		take: limit,
 		orderBy: { createdAt: "desc" },
-		include: { photos: { orderBy: { sortOrder: "asc" }, take: 1 } },
+		include: { 
+			photos: { orderBy: { sortOrder: "asc" }, take: 1 },
+			reviews: {
+				where: { status: "APPROVED" },
+				select: {
+					rating: true,
+				},
+			},
+		},
 	});
 
-	return NextResponse.json(spots);
+	// Вычисляем средний рейтинг для каждого места
+	const spotsWithRating = spots.map((spot: any) => {
+		const reviews = spot.reviews || [];
+		const averageRating = reviews.length > 0
+			? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
+			: 0;
+		const reviewCount = reviews.length;
+
+		return {
+			...spot,
+			averageRating,
+			reviewCount,
+		};
+	});
+
+	return NextResponse.json(spotsWithRating);
 }
 
 export async function POST(req: Request) {
@@ -84,7 +107,7 @@ export async function POST(req: Request) {
 	const {
 		title, description, pricePerHour, sizeL, sizeW, sizeH,
 		covered, guarded, camera, evCharging, disabledAccessible, wideEntrance,
-		accessType, rules, address, geoLat, geoLng, photos,
+		accessType, rules, address, geoLat, geoLng, spotNumber, photos,
 	} = parsed.data;
 
 	const baseStatus = "PENDING_VERIFICATION";
@@ -95,7 +118,7 @@ export async function POST(req: Request) {
 			status: baseStatus,
 			title, description, pricePerHour, sizeL, sizeW, sizeH,
 			covered, guarded, camera, evCharging, disabledAccessible, wideEntrance,
-			accessType, rules, address, geoLat, geoLng,
+			accessType, rules, address, geoLat, geoLng, spotNumber,
 			photos: { create: photos.map((url, i) => ({ url, sortOrder: i })) },
 		},
 	});

@@ -126,9 +126,26 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     try {
       const dbSpot = await prisma.parkingSpot.findUnique({
         where: { id },
-        include: { photos: true },
+        include: { 
+          photos: true,
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
       } as any);
-      if (dbSpot) return NextResponse.json(dbSpot);
+      if (dbSpot) {
+        // Форматируем ответ
+        const formatted = {
+          ...dbSpot,
+          ownerId: dbSpot.ownerId,
+          owner: dbSpot.owner,
+        };
+        return NextResponse.json(formatted);
+      }
     } catch (_e) {
       // ignore and fallback to static mocks below
     }

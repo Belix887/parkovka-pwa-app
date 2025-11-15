@@ -233,6 +233,7 @@ export default function CreateSpotPage() {
       address: address || String(body.address).trim(),
       geoLat: finalGeoLat,
       geoLng: finalGeoLng,
+      spotNumber: body.spotNumber ? String(body.spotNumber).trim() : undefined,
       photos,
     };
     
@@ -370,6 +371,14 @@ export default function CreateSpotPage() {
                       )}
                     </div>
                   </div>
+
+                  <Input
+                    name="spotNumber"
+                    label="Номер парковочного места"
+                    placeholder="Например: A-12, 5, П-3"
+                    error={fieldErrors.spotNumber}
+                    helperText="Укажите номер места, если он есть (необязательно)"
+                  />
 
                   <div className="grid grid-cols-3 gap-3 md:gap-4">
                     <Input
