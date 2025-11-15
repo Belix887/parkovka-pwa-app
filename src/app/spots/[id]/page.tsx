@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import type { Route, RoutePoint } from "@/lib/routing";
 import dynamic from "next/dynamic";
-import { useState, useEffect } from "react";
 
 const LeafletMap = dynamic(() => import("@/components/map/LeafletMap"), { ssr: false });
 
