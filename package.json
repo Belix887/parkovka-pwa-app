@@ -16,7 +16,7 @@
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:deploy": "prisma migrate deploy",
     "setup": "npm run db:up && npm run prisma:generate && npm run prisma:migrate && npm run seed",
-    "vercel-build": "prisma generate && (prisma migrate deploy || echo 'skip migrate') && next build",
+    "vercel-build": "prisma generate && next build",
     "postinstall": "prisma generate"
   },
   "dependencies": {

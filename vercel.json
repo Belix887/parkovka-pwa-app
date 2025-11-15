@@ -2,9 +2,5 @@
   "buildCommand": "npm run vercel-build",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["iad1"],
-  "env": {
-    "PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING": "1"
-  }
+  "regions": ["iad1"]
 }
-
