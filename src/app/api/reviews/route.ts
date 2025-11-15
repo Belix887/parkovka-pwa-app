@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { reviewCreateSchema } from "@/lib/validation";
 import { getCurrentUser } from "@/lib/auth";
+import { ReviewStatus } from "@prisma/client";
 
 // Создать отзыв
 export async function POST(req: Request) {
@@ -102,7 +103,7 @@ export async function POST(req: Request) {
         rating,
         title: title || null,
         comment,
-        status: "PENDING", // На модерации
+        status: ReviewStatus.PENDING, // На модерации
         photos: photos && photos.length > 0
           ? {
               create: photos.map((url, index) => ({

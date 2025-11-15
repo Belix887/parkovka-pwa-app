@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { reviewUpdateSchema } from "@/lib/validation";
+import { ReviewStatus } from "@prisma/client";
 
 // Получить отзыв
 export async function GET(
@@ -123,7 +124,7 @@ export async function PATCH(
         rating: parsed.data.rating,
         title: parsed.data.title,
         comment: parsed.data.comment,
-        status: "PENDING", // Снова на модерации после редактирования
+        status: ReviewStatus.PENDING, // Снова на модерации после редактирования
         photos: parsed.data.photos
           ? {
               deleteMany: {},
@@ -201,7 +202,7 @@ export async function DELETE(
     await prisma.review.update({
       where: { id },
       data: {
-        status: "HIDDEN",
+        status: ReviewStatus.HIDDEN,
       },
     });
 

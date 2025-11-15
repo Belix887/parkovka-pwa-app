@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { ReviewStatus } from "@prisma/client";
 
 // Получить список избранного
 export async function GET(req: Request) {
@@ -29,7 +30,7 @@ export async function GET(req: Request) {
               },
             },
             reviews: {
-              where: { status: "APPROVED" },
+              where: { status: ReviewStatus.APPROVED },
               select: {
                 rating: true,
               },

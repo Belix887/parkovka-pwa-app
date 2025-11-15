@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ReviewStatus } from "@prisma/client";
 
 // Получить отзывы места
 export async function GET(
@@ -28,7 +29,7 @@ export async function GET(
     // Строим запрос
     const where: any = {
       spotId,
-      status: "APPROVED", // Только одобренные отзывы
+      status: ReviewStatus.APPROVED, // Только одобренные отзывы
     };
 
     if (ratingFilter) {
@@ -84,7 +85,7 @@ export async function GET(
       by: ["rating"],
       where: {
         spotId,
-        status: "APPROVED",
+        status: ReviewStatus.APPROVED,
       },
       _count: {
         rating: true,
@@ -100,7 +101,7 @@ export async function GET(
     const avgRatingResult = await prisma.review.aggregate({
       where: {
         spotId,
-        status: "APPROVED",
+        status: ReviewStatus.APPROVED,
       },
       _avg: {
         rating: true,

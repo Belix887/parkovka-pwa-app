@@ -62,7 +62,7 @@ export async function GET(req: Request) {
 		include: { 
 			photos: { orderBy: { sortOrder: "asc" }, take: 1 },
 			reviews: {
-				where: { status: "APPROVED" },
+				where: { status: "APPROVED" as any },
 				select: {
 					rating: true,
 				},
